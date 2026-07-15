@@ -3,8 +3,6 @@
 Configuration tools for CachyOS. Portable: uses relative paths (`$HOME`,
 `/etc`) and doesn't depend on any specific machine.
 
-The UI is **bilingual (English / Spanish)**. See [Language](#language) below.
-
 ## Scripts (`bin/`)
 
 ### `cachyos-assistant`
@@ -51,18 +49,6 @@ cachyos-fix [all|keyboard|numlock|wifi|mirrors|status]
 - **mirrors** — reorders the mirror list (`cachyos-rate-mirrors`, with
   `rate-mirrors`/`reflector` as a fallback) and forces `pacman -Syy`. Fixes
   the 404 errors on update when mirrors are out of sync.
-
-## Language
-
-The interface language is resolved in this order:
-
-1. `CACHYOS_LANG` environment variable (`en` or `es`).
-2. Saved choice in `~/.config/cachyos-toolkit/lang`.
-3. System locale (`LANG`): Spanish → `es`, otherwise `en`.
-
-On first run the assistant asks for the language and remembers it. You can
-change it any time from the main menu (option **Language / Idioma**). The
-assistant passes the chosen language to `cachyos-fix` automatically.
 
 ## Install on another CachyOS machine
 
