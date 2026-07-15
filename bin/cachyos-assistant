@@ -1,0 +1,918 @@
+#!/usr/bin/env bash
+#
+# cachyos-assistant — CachyOS configuration assistant (JorgeLT)
+#
+# Interactive menu with sections:
+#   1) Install applications (by category)
+#   2) Configuration (fixes and tweaks, by category)
+#   3) System status
+#
+# Fixes/tweaks rely on the 'cachyos-fix' script (same PATH).
+#
+# The UI is bilingual (English / Spanish). The chosen language is remembered
+# in ~/.config/cachyos-toolkit/lang and can be changed from the main menu or
+# overridden with the CACHYOS_LANG environment variable.
+#
+set -uo pipefail
+
+# ------------------------------ Style -----------------------------
+C_RESET=$'\033[0m'; C_B=$'\033[1m'
+C_BLUE=$'\033[1;34m'; C_GREEN=$'\033[1;32m'; C_YELLOW=$'\033[1;33m'
+C_RED=$'\033[1;31m'; C_CYAN=$'\033[1;36m'; C_DIM=$'\033[2m'
+
+# ------------------------------ i18n ------------------------------
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cachyos-toolkit"
+LANG_FILE="$CONFIG_DIR/lang"
+UI_LANG="en"          # resolved by load_lang()
+LANG_SOURCE="default" # env | file | default
+
+# Guess the default language from the system locale (Spanish -> es, else en).
+detect_system_lang() {
+  case "${LC_ALL:-}${LC_MESSAGES:-}${LANG:-}" in
+    es*|*_ES*|*es_*) echo es ;;
+    *) echo en ;;
+  esac
+}
+
+# Resolve the UI language: env override > saved file > system locale.
+load_lang() {
+  if [ -n "${CACHYOS_LANG:-}" ]; then
+    UI_LANG="$CACHYOS_LANG"; LANG_SOURCE="env"
+  elif [ -r "$LANG_FILE" ]; then
+    UI_LANG="$(<"$LANG_FILE")"; LANG_SOURCE="file"
+  else
+    UI_LANG="$(detect_system_lang)"; LANG_SOURCE="default"
+  fi
+  case "$UI_LANG" in es|en) ;; *) UI_LANG="en" ;; esac
+}
+
+# Persist the chosen language so it is remembered next time.
+save_lang() {
+  mkdir -p "$CONFIG_DIR" 2>/dev/null || return 0
+  printf '%s\n' "$UI_LANG" > "$LANG_FILE" 2>/dev/null || true
+}
+
+declare -A MSG_EN MSG_ES
+
+# --- English catalog ---
+MSG_EN[app_title]="CachyOS Assistant"
+MSG_EN[press_enter]="Press Enter to continue…"
+MSG_EN[invalid_option]="Invalid option."
+MSG_EN[yn_hint]="y/N"
+MSG_EN[goodbye]="See you!"
+MSG_EN[err_root]="Do not run as root or with sudo. Use it as a normal user (it asks for sudo when needed)."
+MSG_EN[aur_missing_deps]="Missing dependencies needed to build from AUR: %s"
+MSG_EN[aur_installing_deps]="They will be installed automatically before continuing…"
+MSG_EN[aur_deps_ok]="Base dependencies installed."
+MSG_EN[aur_deps_fail]="Could not install the base dependencies (%s)."
+MSG_EN[paru_missing]="You have no AUR helper (paru/yay) and many apps (VS Code, etc.) live in AUR."
+MSG_EN[paru_ask]="Install «paru» automatically so we can continue?"
+MSG_EN[paru_no_helper]="Without paru/yay you can only install packages from the official repos."
+MSG_EN[paru_searching]="Looking for «paru» in the official repos…"
+MSG_EN[paru_from_repo]="paru installed from the official repos."
+MSG_EN[paru_compiling]="Not in the repos; compiling it from AUR."
+MSG_EN[paru_from_aur]="paru installed from AUR."
+MSG_EN[paru_fail]="Could not install paru automatically."
+MSG_EN[tmpdir_fail]="Could not create a temporary directory."
+MSG_EN[install_with]="Will be installed with «%s»: %s"
+MSG_EN[confirm_install]="Confirm the installation?"
+MSG_EN[install_cancelled]="Installation cancelled."
+MSG_EN[pacman_only]="Without paru/yay: only official-repo packages will be installed (AUR ones will fail)."
+MSG_EN[aur_env_cancel]="Installation cancelled: the AUR build environment is missing."
+MSG_EN[list_title]="Install applications › Installation list"
+MSG_EN[list_added]="Added to the list: %s"
+MSG_EN[list_already]="Already in the list: %s"
+MSG_EN[list_empty_hint]="The list is empty. Add apps from any category."
+MSG_EN[list_done]="List installed and cleared."
+MSG_EN[list_install_all]="Install EVERYTHING in the list"
+MSG_EN[list_remove]="Remove an item (nº)"
+MSG_EN[list_clear]="Clear the list"
+MSG_EN[list_remove_prompt]="Nº to remove: "
+MSG_EN[list_removed]="Removed: %s"
+MSG_EN[list_bad_num]="Invalid number."
+MSG_EN[list_cleared]="List cleared."
+MSG_EN[list_is_empty]="The list is empty."
+MSG_EN[install_all]="Install ALL"
+MSG_EN[view_list]="View the installation list (%d queued)"
+MSG_EN[cat_prompt]="Choose (numbers separated by spaces, 'a'=all, 'L'=list, 0=back): "
+MSG_EN[ignored_value]="Ignored invalid value: '%s'"
+MSG_EN[nothing_selected]="Nothing selected."
+MSG_EN[selected]="Selected: %s"
+MSG_EN[opt_install_now]="Install now"
+MSG_EN[opt_add_list]="Add to the installation list"
+MSG_EN[cancel]="Cancel"
+MSG_EN[what_to_do]="What should I do with the selection? "
+MSG_EN[menu_install_apps]="Install applications"
+MSG_EN[back]="Back"
+MSG_EN[cat_development]="Development"
+MSG_EN[cat_games]="Games"
+MSG_EN[cat_multimedia]="Multimedia"
+MSG_EN[cat_office]="Office"
+MSG_EN[cat_internet]="Internet"
+MSG_EN[cat_system]="System and utilities"
+MSG_EN[list_menu]="Installation list (%d queued)"
+MSG_EN[choose_category]="Choose a category: "
+MSG_EN[dev_title]="Install applications › Development"
+MSG_EN[dev_packs]="Complete packs (installs a whole stack)"
+MSG_EN[dev_individual]="Individual install (pick single apps)"
+MSG_EN[dev_choose_mode]="Choose a mode: "
+MSG_EN[dev_ind_title]="Development › Individual install"
+MSG_EN[dev_editors]="Code editors / IDEs"
+MSG_EN[dev_languages]="Languages and runtimes"
+MSG_EN[dev_databases]="Databases"
+MSG_EN[dev_tools]="Tools and DevOps"
+MSG_EN[dev_choose_type]="Choose a type: "
+MSG_EN[subcat_packs]="Development › Packs"
+MSG_EN[subcat_editors]="Development › Editors"
+MSG_EN[subcat_languages]="Development › Languages"
+MSG_EN[subcat_databases]="Development › Databases"
+MSG_EN[subcat_tools]="Development › Tools"
+MSG_EN[cfg_title]="Configuration"
+MSG_EN[cfg_network]="Network and connectivity"
+MSG_EN[cfg_keyboard]="Keyboard and language"
+MSG_EN[cfg_mirrors]="Mirrors and packages"
+MSG_EN[cfg_apply_all]="Apply ALL fixes"
+MSG_EN[cfg_apply_all_confirm]="Apply ALL known fixes?"
+MSG_EN[fix_not_found]="cachyos-fix not found."
+MSG_EN[fix_not_found_path]="cachyos-fix not found in PATH; cannot apply this fix."
+MSG_EN[apply_fix_confirm]="Apply this fix now?"
+MSG_EN[fix_skipped]="Fix skipped."
+MSG_EN[choose]="Choose: "
+MSG_EN[net_title]="Configuration › Network and connectivity"
+MSG_EN[net_wifi]="WiFi disconnections (rtw88 / RTL8822BE)"
+MSG_EN[desc_wifi]="Disables power saving on the rtw88 driver (power-save, ASPM and LPS-deep), the cause of the BEACON-LOSS bursts. WiFi drops for a few seconds if the driver has to be reloaded."
+MSG_EN[kbd_title]="Configuration › Keyboard and language"
+MSG_EN[kbd_layout]="Keyboard layout in X11/Xwayland apps (choose language)"
+MSG_EN[kbd_numlock]="Num Lock: keep it always on"
+MSG_EN[kbd_no_layout]="No layout chosen."
+MSG_EN[desc_keyboard]="Forces the '%s' layout in Xwayland too (X11/Electron apps like VS Code can fall back to 'us'). It sets it system-wide with localectl, leaves a backup autostart entry and applies it live."
+MSG_EN[desc_numlock]="Keeps Num Lock (numeric keypad) on: configures KDE to enable it at login and applies it right now (installs numlockx from the official repos if needed)."
+MSG_EN[layout_prompt]="Choose layout [1]: "
+MSG_EN[layout_other]="Other (type a code, e.g. ru, no, cz)"
+MSG_EN[layout_code_prompt]="Layout code: "
+MSG_EN[mir_title]="Configuration › Mirrors and packages"
+MSG_EN[mir_refresh]="Refresh mirrors and re-sync pacman"
+MSG_EN[desc_mirrors]="Reorders the mirror list (with cachyos-rate-mirrors, or rate-mirrors/reflector as a fallback) to keep the fastest and most up-to-date ones, and forces pacman to re-download the databases (pacman -Syy). Fixes the 404 errors on update when mirrors are out of sync."
+MSG_EN[status_title]="System status"
+MSG_EN[fix_not_found_basic]="cachyos-fix not found; showing the basics:"
+MSG_EN[main_pkgmgr]="Package manager: %s"
+MSG_EN[main_install]="Install applications"
+MSG_EN[main_config]="Configuration"
+MSG_EN[main_status]="System status"
+MSG_EN[main_language]="Language / Idioma"
+MSG_EN[exit]="Exit"
+MSG_EN[main_choose]="Choose an option: "
+MSG_EN[lang_title]="Language / Idioma"
+MSG_EN[lang_saved]="Language set to English."
+
+# --- Spanish catalog ---
+MSG_ES[app_title]="Asistente de CachyOS"
+MSG_ES[press_enter]="Pulsa Enter para continuar…"
+MSG_ES[invalid_option]="Opción no válida."
+MSG_ES[yn_hint]="s/N"
+MSG_ES[goodbye]="¡Hasta luego!"
+MSG_ES[err_root]="No lo ejecutes como root ni con sudo. Úsalo como usuario normal (pedirá sudo cuando haga falta)."
+MSG_ES[aur_missing_deps]="Faltan dependencias necesarias para compilar desde AUR: %s"
+MSG_ES[aur_installing_deps]="Se instalarán automáticamente antes de continuar…"
+MSG_ES[aur_deps_ok]="Dependencias base instaladas."
+MSG_ES[aur_deps_fail]="No se pudieron instalar las dependencias base (%s)."
+MSG_ES[paru_missing]="No tienes ningún ayudante de AUR (paru/yay) y muchas apps (VS Code, etc.) están en AUR."
+MSG_ES[paru_ask]="¿Instalo «paru» automáticamente para poder continuar?"
+MSG_ES[paru_no_helper]="Sin paru/yay solo podrás instalar paquetes de los repos oficiales."
+MSG_ES[paru_searching]="Buscando «paru» en los repos oficiales…"
+MSG_ES[paru_from_repo]="paru instalado desde los repos oficiales."
+MSG_ES[paru_compiling]="No está en los repos; lo compilo desde AUR."
+MSG_ES[paru_from_aur]="paru instalado desde AUR."
+MSG_ES[paru_fail]="No se pudo instalar paru automáticamente."
+MSG_ES[tmpdir_fail]="No pude crear un directorio temporal."
+MSG_ES[install_with]="Se instalarán con «%s»: %s"
+MSG_ES[confirm_install]="¿Confirmas la instalación?"
+MSG_ES[install_cancelled]="Instalación cancelada."
+MSG_ES[pacman_only]="Sin paru/yay: solo se instalarán paquetes de los repos oficiales (los de AUR fallarán)."
+MSG_ES[aur_env_cancel]="Instalación cancelada: falta el entorno de compilación de AUR."
+MSG_ES[list_title]="Instalar aplicaciones › Lista de instalación"
+MSG_ES[list_added]="Añadido a la lista: %s"
+MSG_ES[list_already]="Ya estaba en la lista: %s"
+MSG_ES[list_empty_hint]="La lista está vacía. Añade apps desde cualquier categoría."
+MSG_ES[list_done]="Lista instalada y vaciada."
+MSG_ES[list_install_all]="Instalar TODO lo de la lista"
+MSG_ES[list_remove]="Quitar un elemento (nº)"
+MSG_ES[list_clear]="Vaciar la lista"
+MSG_ES[list_remove_prompt]="Nº a quitar: "
+MSG_ES[list_removed]="Quitado: %s"
+MSG_ES[list_bad_num]="Número no válido."
+MSG_ES[list_cleared]="Lista vaciada."
+MSG_ES[list_is_empty]="La lista está vacía."
+MSG_ES[install_all]="Instalar TODO"
+MSG_ES[view_list]="Ver la lista de instalación (%d en cola)"
+MSG_ES[cat_prompt]="Elige (nºs separados por espacio, 'a'=todo, 'L'=lista, 0=volver): "
+MSG_ES[ignored_value]="Ignorado valor no válido: '%s'"
+MSG_ES[nothing_selected]="No se seleccionó nada."
+MSG_ES[selected]="Seleccionado: %s"
+MSG_ES[opt_install_now]="Instalar ahora"
+MSG_ES[opt_add_list]="Añadir a la lista de instalación"
+MSG_ES[cancel]="Cancelar"
+MSG_ES[what_to_do]="¿Qué hago con lo seleccionado? "
+MSG_ES[menu_install_apps]="Instalar aplicaciones"
+MSG_ES[back]="Volver"
+MSG_ES[cat_development]="Desarrollo"
+MSG_ES[cat_games]="Juegos"
+MSG_ES[cat_multimedia]="Multimedia"
+MSG_ES[cat_office]="Ofimática"
+MSG_ES[cat_internet]="Internet"
+MSG_ES[cat_system]="Sistema y utilidades"
+MSG_ES[list_menu]="Lista de instalación (%d en cola)"
+MSG_ES[choose_category]="Elige una categoría: "
+MSG_ES[dev_title]="Instalar aplicaciones › Desarrollo"
+MSG_ES[dev_packs]="Packs completos (instala un stack entero)"
+MSG_ES[dev_individual]="Instalación individual (elige apps sueltas)"
+MSG_ES[dev_choose_mode]="Elige un modo: "
+MSG_ES[dev_ind_title]="Desarrollo › Instalación individual"
+MSG_ES[dev_editors]="Editores de código / IDEs"
+MSG_ES[dev_languages]="Lenguajes y runtimes"
+MSG_ES[dev_databases]="Bases de datos"
+MSG_ES[dev_tools]="Herramientas y DevOps"
+MSG_ES[dev_choose_type]="Elige un tipo: "
+MSG_ES[subcat_packs]="Desarrollo › Packs"
+MSG_ES[subcat_editors]="Desarrollo › Editores"
+MSG_ES[subcat_languages]="Desarrollo › Lenguajes"
+MSG_ES[subcat_databases]="Desarrollo › Bases de datos"
+MSG_ES[subcat_tools]="Desarrollo › Herramientas"
+MSG_ES[cfg_title]="Configuración"
+MSG_ES[cfg_network]="Red y conectividad"
+MSG_ES[cfg_keyboard]="Teclado e idioma"
+MSG_ES[cfg_mirrors]="Mirrors y paquetes"
+MSG_ES[cfg_apply_all]="Aplicar TODOS los arreglos"
+MSG_ES[cfg_apply_all_confirm]="¿Aplicar TODOS los arreglos conocidos?"
+MSG_ES[fix_not_found]="No se encuentra 'cachyos-fix'."
+MSG_ES[fix_not_found_path]="No se encuentra 'cachyos-fix' en el PATH; no puedo aplicar este arreglo."
+MSG_ES[apply_fix_confirm]="¿Aplicar este arreglo ahora?"
+MSG_ES[fix_skipped]="Arreglo omitido."
+MSG_ES[choose]="Elige: "
+MSG_ES[net_title]="Configuración › Red y conectividad"
+MSG_ES[net_wifi]="Desconexiones de WiFi (rtw88 / RTL8822BE)"
+MSG_ES[desc_wifi]="Desactiva el ahorro de energía del driver rtw88 (power-save, ASPM y LPS-deep), causa de las ráfagas de BEACON-LOSS. Corta el WiFi unos segundos si hace falta recargar el driver."
+MSG_ES[kbd_title]="Configuración › Teclado e idioma"
+MSG_ES[kbd_layout]="Distribución de teclado en apps X11/Xwayland (elige idioma)"
+MSG_ES[kbd_numlock]="Bloq Num: mantenerlo siempre activado"
+MSG_ES[kbd_no_layout]="No se eligió distribución."
+MSG_ES[desc_keyboard]="Fuerza la distribución '%s' también en Xwayland (las apps X11/Electron como VS Code pueden caer en 'us'). Lo fija a nivel de sistema con localectl, deja un autostart de respaldo y lo aplica en caliente."
+MSG_ES[desc_numlock]="Mantiene el Bloq Num (teclado numérico) activado: configura KDE para encenderlo al iniciar sesión y lo aplica ahora mismo (instala numlockx de los repos oficiales si hace falta)."
+MSG_ES[layout_prompt]="Elige distribución [1]: "
+MSG_ES[layout_other]="Otro (escribir código, p. ej. ru, no, cz)"
+MSG_ES[layout_code_prompt]="Código de distribución: "
+MSG_ES[mir_title]="Configuración › Mirrors y paquetes"
+MSG_ES[mir_refresh]="Refrescar mirrors y re-sincronizar pacman"
+MSG_ES[desc_mirrors]="Reordena la lista de mirrors (con cachyos-rate-mirrors, o rate-mirrors/reflector como respaldo) para quedarte con los más rápidos y actualizados, y fuerza a pacman a re-descargar las bases de datos (pacman -Syy). Soluciona los errores 404 al actualizar cuando los mirrors están desincronizados."
+MSG_ES[status_title]="Estado del sistema"
+MSG_ES[fix_not_found_basic]="No se encuentra 'cachyos-fix'; muestro lo básico:"
+MSG_ES[main_pkgmgr]="Gestor de paquetes: %s"
+MSG_ES[main_install]="Instalar aplicaciones"
+MSG_ES[main_config]="Configuración"
+MSG_ES[main_status]="Estado del sistema"
+MSG_ES[main_language]="Idioma / Language"
+MSG_ES[exit]="Salir"
+MSG_ES[main_choose]="Elige una opción: "
+MSG_ES[lang_title]="Idioma / Language"
+MSG_ES[lang_saved]="Idioma cambiado a español."
+
+# Translate a message key into the current language (falls back to EN, then key).
+t() {
+  local key="$1"
+  local -n _cat="MSG_${UI_LANG^^}"
+  local v="${_cat[$key]:-}"
+  [ -n "$v" ] || v="${MSG_EN[$key]:-$key}"
+  printf '%s' "$v"
+}
+
+# ---------------------------- Helpers -----------------------------
+header() {
+  clear 2>/dev/null || true
+  printf '%s\n' "${C_CYAN}╔══════════════════════════════════════════════╗${C_RESET}"
+  printf '%s%-46s%s\n' "${C_CYAN}║  ${C_B}" "$(t app_title)" "${C_RESET}${C_CYAN}║${C_RESET}"
+  printf '%s%-46s%s\n' "${C_CYAN}║  ${C_DIM}" "${1:-}" "${C_RESET}${C_CYAN}║${C_RESET}"
+  printf '%s\n\n' "${C_CYAN}╚══════════════════════════════════════════════╝${C_RESET}"
+}
+ok()   { printf '   %s✔%s %s\n' "$C_GREEN" "$C_RESET" "$*"; }
+warn() { printf '   %s!%s %s\n' "$C_YELLOW" "$C_RESET" "$*"; }
+err()  { printf '   %s✗%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
+pause(){ printf '\n%s%s%s' "$C_DIM" "$(t press_enter)" "$C_RESET"; read -r _; }
+
+confirm() { # $1 = question ; returns 0 on yes
+  local r
+  read -rp "$(printf '%s%s [%s]: %s' "$C_B" "$1" "$(t yn_hint)" "$C_RESET")" r
+  [[ "$r" =~ ^[sSyY]$ ]]
+}
+
+# --------------------------- Guards -------------------------------
+if [ "$(id -u)" -eq 0 ]; then
+  load_lang
+  err "$(t err_root)"
+  exit 1
+fi
+
+# Locate 'cachyos-fix': first next to this script, otherwise in PATH.
+SCRIPT_DIR=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+CACHYOS_FIX="$SCRIPT_DIR/cachyos-fix"
+[ -x "$CACHYOS_FIX" ] || CACHYOS_FIX=$(command -v cachyos-fix 2>/dev/null || true)
+
+# Detect the package manager / AUR helper.
+detect_helper() {
+  if   command -v paru >/dev/null 2>&1; then echo paru
+  elif command -v yay  >/dev/null 2>&1; then echo yay
+  else echo pacman; fi
+}
+
+# Ensure the AUR build environment ('base-devel' + 'git').
+# AUR packages (including '-bin' ones) build with makepkg, which needs the
+# 'base-devel' group (fakeroot, make, gcc…) and 'git'. On a fresh system they
+# may be missing and the install fails (e.g. visual-studio-code-bin).
+# Returns 0 if everything is ready; 1 if it could not install them.
+ensure_base_devel() {
+  local -a missing=()
+  command -v git      >/dev/null 2>&1 || missing+=("git")
+  command -v fakeroot >/dev/null 2>&1 || missing+=("base-devel")
+  command -v make     >/dev/null 2>&1 || missing+=("base-devel")
+  command -v gcc      >/dev/null 2>&1 || missing+=("base-devel")
+
+  # Deduplicate (base-devel may appear several times).
+  local -a deps=(); local d
+  for d in "${missing[@]}"; do
+    [[ " ${deps[*]} " == *" $d "* ]] || deps+=("$d")
+  done
+  [ "${#deps[@]}" -eq 0 ] && return 0
+
+  warn "$(printf "$(t aur_missing_deps)" "${deps[*]}")"
+  printf '   %s%s%s\n\n' "$C_DIM" "$(t aur_installing_deps)" "$C_RESET"
+  if sudo pacman -S --needed --noconfirm -- "${deps[@]}"; then
+    ok "$(t aur_deps_ok)"
+    return 0
+  fi
+  err "$(printf "$(t aur_deps_fail)" "${deps[*]}")"
+  return 1
+}
+
+# Install 'paru' when there is no AUR helper.
+# On CachyOS 'paru' is in the official repos, so pacman suffices; otherwise it
+# is compiled from AUR (git clone + makepkg). Returns 0 if it ends up installed.
+install_paru() {
+  warn "$(t paru_missing)"
+  if ! confirm "$(t paru_ask)"; then
+    warn "$(t paru_no_helper)"
+    return 1
+  fi
+
+  # 1) Fast path: paru is packaged in the CachyOS repos.
+  printf '\n%s%s%s\n' "$C_DIM" "$(t paru_searching)" "$C_RESET"
+  if sudo pacman -S --needed --noconfirm paru; then
+    ok "$(t paru_from_repo)"
+    return 0
+  fi
+
+  # 2) Fallback: build paru from AUR.
+  warn "$(t paru_compiling)"
+  ensure_base_devel || return 1
+
+  local tmp; tmp=$(mktemp -d) || { err "$(t tmpdir_fail)"; return 1; }
+  local rc=0
+  if git clone --depth 1 https://aur.archlinux.org/paru-bin.git "$tmp/paru-bin" \
+     && ( cd "$tmp/paru-bin" && makepkg -si --noconfirm ); then
+    ok "$(t paru_from_aur)"
+  else
+    err "$(t paru_fail)"
+    rc=1
+  fi
+  rm -rf "$tmp"
+  return "$rc"
+}
+
+# Install a list of packages.
+install_packages() {
+  local helper; helper=$(detect_helper)
+
+  # If there is no AUR helper, offer to install one first.
+  if [ "$helper" = pacman ]; then
+    if install_paru; then
+      helper=$(detect_helper)   # re-detect: should be paru now
+    fi
+  fi
+
+  printf '\n%s%s%s\n\n' "$C_B" "$(printf "$(t install_with)" "$helper" "$*")" "$C_RESET"
+  if ! confirm "$(t confirm_install)"; then
+    warn "$(t install_cancelled)"; return 1
+  fi
+  if [ "$helper" = pacman ]; then
+    warn "$(t pacman_only)"
+    sudo pacman -S --needed -- "$@"
+  else
+    # Prepare the AUR build environment before installing.
+    if ! ensure_base_devel; then
+      err "$(t aur_env_cancel)"
+      return 1
+    fi
+    # --skipreview avoids the «Edit now?» prompt and the PKGBUILD pager,
+    # which confuse users and can abort the install.
+    "$helper" -S --needed --skipreview -- "$@"
+  fi
+}
+
+# ==================================================================
+#  Installation list (accumulates apps from several categories)
+# ==================================================================
+# Lets you pick apps in different categories and install them all at once,
+# without forcing you through it: in each category you can «Install now»
+# (direct flow) or «Add to the list».
+LIST_NAMES=()   # visible name of each entry
+LIST_PKGS=()    # package(s) of each entry (parallel to LIST_NAMES)
+
+list_add() { # $1 = visible name ; $2 = package(s)
+  local name="$1" pkgs="$2" p
+  for p in "${LIST_PKGS[@]}"; do
+    [ "$p" = "$pkgs" ] && { warn "$(printf "$(t list_already)" "$name")"; return; }
+  done
+  LIST_NAMES+=("$name")
+  LIST_PKGS+=("$pkgs")
+  ok "$(printf "$(t list_added)" "$name")"
+}
+
+list_show() {
+  local i
+  for i in "${!LIST_NAMES[@]}"; do
+    printf '  %s%2d)%s %-26s %s%s%s\n' \
+      "$C_B" "$((i+1))" "$C_RESET" "${LIST_NAMES[$i]}" "$C_DIM" "${LIST_PKGS[$i]}" "$C_RESET"
+  done
+}
+
+list_install() {
+  local -a flat=(); local e
+  for e in "${LIST_PKGS[@]}"; do flat+=($e); done   # split the package groups
+  [ "${#flat[@]}" -eq 0 ] && { warn "$(t list_is_empty)"; return 1; }
+  if install_packages "${flat[@]}"; then
+    LIST_NAMES=(); LIST_PKGS=()
+    ok "$(t list_done)"
+  fi
+}
+
+list_menu() {
+  while true; do
+    header "$(t list_title)"
+    if [ "${#LIST_NAMES[@]}" -eq 0 ]; then
+      warn "$(t list_empty_hint)"
+      pause; return
+    fi
+    list_show
+    printf '\n  %si)%s %s\n' "$C_B" "$C_RESET" "$(t list_install_all)"
+    printf '  %sq)%s %s\n'   "$C_B" "$C_RESET" "$(t list_remove)"
+    printf '  %sv)%s %s\n'   "$C_B" "$C_RESET" "$(t list_clear)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t choose)" op
+    case "$op" in
+      i|I) list_install; pause; [ "${#LIST_NAMES[@]}" -eq 0 ] && return ;;
+      q|Q)
+        local n; read -rp "$(t list_remove_prompt)" n
+        if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "${#LIST_NAMES[@]}" ]; then
+          local name="${LIST_NAMES[$((n-1))]}"
+          unset 'LIST_NAMES[$((n-1))]' 'LIST_PKGS[$((n-1))]'
+          LIST_NAMES=("${LIST_NAMES[@]}"); LIST_PKGS=("${LIST_PKGS[@]}")
+          ok "$(printf "$(t list_removed)" "$name")"
+        else
+          warn "$(t list_bad_num)"
+        fi
+        pause ;;
+      v|V) LIST_NAMES=(); LIST_PKGS=(); ok "$(t list_cleared)"; pause; return ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+# ==================================================================
+#  CATALOG: applications
+# ==================================================================
+# NAMES and PKGS arrays are language-neutral (proper nouns / package ids).
+# DESC arrays come in _EN and _ES variants, picked by UI_LANG at runtime.
+
+# ----------------------------- Games ------------------------------
+GAMES_NAMES=(
+  "Meta Gaming CachyOS" "Steam" "Lutris" "Heroic Games Launcher" "Bottles"
+  "ProtonUp-Qt" "Proton (CachyOS)" "Wine (CachyOS)" "Winetricks" "GameMode"
+  "MangoHud" "GOverlay" "vkBasalt" "Prism Launcher (Minecraft)" "Discord" "OBS Studio"
+)
+GAMES_PKGS=(
+  "cachyos-gaming-meta" "steam" "lutris" "heroic-games-launcher-bin" "bottles"
+  "protonup-qt" "proton-cachyos" "wine-cachyos" "winetricks" "gamemode lib32-gamemode"
+  "mangohud lib32-mangohud" "goverlay" "vkbasalt lib32-vkbasalt" "prismlauncher" "discord" "obs-studio"
+)
+GAMES_DESC_EN=(
+  "CachyOS-optimized gaming stack (recommended)" "Valve's gaming platform"
+  "Game manager (GOG, Epic, emulators…)" "Client for Epic Games and GOG"
+  "Run Windows software in isolated environments" "Manage Proton-GE / Wine-GE versions"
+  "CachyOS-optimized Proton" "CachyOS-optimized Wine" "Installs common Wine dependencies"
+  "Optimizes the system while gaming (Feral)" "In-game FPS/temperature overlay"
+  "GUI to configure MangoHud" "Post-processing (sharpen, etc.) for Vulkan"
+  "Minecraft launcher" "Voice/text chat for gaming" "Recording and streaming"
+)
+GAMES_DESC_ES=(
+  "Stack de juego optimizado por CachyOS (recomendado)" "Plataforma de juegos de Valve"
+  "Gestor de juegos (GOG, Epic, emuladores…)" "Cliente para Epic Games y GOG"
+  "Ejecuta software Windows en entornos aislados" "Gestiona versiones de Proton-GE / Wine-GE"
+  "Proton optimizado por CachyOS" "Wine optimizado por CachyOS" "Instala dependencias comunes de Wine"
+  "Optimiza el sistema durante el juego (Feral)" "Overlay de FPS/temperaturas en juego"
+  "Interfaz gráfica para configurar MangoHud" "Post-procesado (sharpen, etc.) para Vulkan"
+  "Lanzador de Minecraft" "Chat de voz/texto para jugar" "Grabación y streaming"
+)
+
+# ------------------ Development: PACKS by stack -------------------
+# Pack names are descriptive, so they are translated too.
+PACKS_NAMES_EN=(
+  "Web Development" "Java" "Rust" "Python" "Go" "C / C++" ".NET / C#"
+  "Containers / DevOps" "XAMPP (Apache + MariaDB + PHP)"
+)
+PACKS_NAMES_ES=(
+  "Desarrollo Web" "Java" "Rust" "Python" "Go" "C / C++" ".NET / C#"
+  "Contenedores / DevOps" "XAMPP (Apache + MariaDB + PHP)"
+)
+PACKS_PKGS=(
+  "nodejs npm yarn git" "jdk-openjdk maven gradle" "rustup base-devel"
+  "python python-pip python-pipx python-virtualenv" "go git"
+  "base-devel clang cmake gdb" "dotnet-sdk" "docker docker-compose lazydocker" "xampp"
+)
+PACKS_DESC_EN=(
+  "Node.js, npm, Yarn and Git" "OpenJDK, Maven and Gradle" "Rust toolchain (rustup) + base-devel"
+  "Python, pip, pipx and virtualenv" "Go compiler and Git" "GCC/Clang, CMake, GDB and base-devel"
+  ".NET SDK" "Docker, Compose and lazydocker" "All-in-one web stack: Apache, MariaDB, PHP and Perl (AUR)"
+)
+PACKS_DESC_ES=(
+  "Node.js, npm, Yarn y Git" "OpenJDK, Maven y Gradle" "Toolchain de Rust (rustup) + base-devel"
+  "Python, pip, pipx y virtualenv" "Compilador Go y Git" "GCC/Clang, CMake, GDB y base-devel"
+  "SDK de .NET" "Docker, Compose y lazydocker" "Stack web todo-en-uno: Apache, MariaDB, PHP y Perl (AUR)"
+)
+
+# --------------- Development: INDIVIDUAL › Editors -----------------
+EDITORS_NAMES=( "Visual Studio Code" "VSCodium" "Neovim" "Vim" "Sublime Text" "Zed" "Emacs" "Micro" "IntelliJ IDEA CE" "Android Studio" )
+EDITORS_PKGS=( "visual-studio-code-bin" "vscodium-bin" "neovim" "vim" "sublime-text-4" "zed" "emacs" "micro" "intellij-idea-community-edition" "android-studio" )
+EDITORS_DESC_EN=( "Microsoft's IDE (AUR)" "VS Code without telemetry (AUR)" "Modern Vim" "Classic editor" "Fast editor (AUR)" "Fast collaborative editor" "Extensible editor" "Simple terminal editor" "JetBrains' Java IDE (AUR)" "Official Android IDE (AUR)" )
+EDITORS_DESC_ES=( "IDE de Microsoft (AUR)" "VS Code sin telemetría (AUR)" "Vim moderno" "Editor clásico" "Editor rápido (AUR)" "Editor colaborativo veloz" "Editor extensible" "Editor de terminal sencillo" "IDE Java de JetBrains (AUR)" "IDE oficial de Android (AUR)" )
+
+# --------------- Development: INDIVIDUAL › Languages ---------------
+LANGS_NAMES=( "Python" "Node.js" "Deno" "Bun" "Rust (rustup)" "Go" "Java (JDK)" ".NET SDK" "Ruby" "PHP" "Kotlin" "Zig" "Lua" "GCC / Clang" )
+LANGS_PKGS=( "python" "nodejs npm" "deno" "bun-bin" "rustup" "go" "jdk-openjdk" "dotnet-sdk" "ruby" "php" "kotlin" "zig" "lua" "gcc clang" )
+LANGS_DESC_EN=( "Python interpreter" "JavaScript on the server" "Modern JS/TS runtime" "Fast runtime/bundler (AUR)" "Rust toolchain" "Go language" "OpenJDK" ".NET platform" "Ruby language" "PHP language" "Kotlin language" "Zig language" "Lua language" "C/C++ compilers" )
+LANGS_DESC_ES=( "Intérprete de Python" "JavaScript en servidor" "Runtime moderno JS/TS" "Runtime/bundler veloz (AUR)" "Toolchain de Rust" "Lenguaje Go" "OpenJDK" "Plataforma .NET" "Lenguaje Ruby" "Lenguaje PHP" "Lenguaje Kotlin" "Lenguaje Zig" "Lenguaje Lua" "Compiladores C/C++" )
+
+# -------------- Development: INDIVIDUAL › Databases ----------------
+DB_NAMES=( "PostgreSQL" "MariaDB" "SQLite" "Redis" "MongoDB" "DBeaver" "pgAdmin 4" )
+DB_PKGS=( "postgresql" "mariadb" "sqlite" "redis" "mongodb-bin" "dbeaver" "pgadmin4" )
+DB_DESC_EN=( "Relational DBMS" "MySQL/MariaDB" "Lightweight file-based DB" "In-memory key-value store" "NoSQL database (AUR)" "Universal GUI client" "PostgreSQL administration" )
+DB_DESC_ES=( "SGBD relacional" "MySQL/MariaDB" "BD ligera en archivo" "Clave-valor en memoria" "BD NoSQL (AUR)" "Cliente gráfico universal" "Administración de PostgreSQL" )
+
+# ------------ Development: INDIVIDUAL › Tools/DevOps ---------------
+TOOLS_NAMES=( "Git" "GitHub CLI" "Lazygit" "Docker" "Podman" "kubectl" "Terraform" "Ansible" "Postman" "HTTPie" "jq" "Warp Terminal" )
+TOOLS_PKGS=( "git" "github-cli" "lazygit" "docker docker-compose" "podman" "kubectl" "terraform" "ansible" "postman-bin" "httpie" "jq" "warp-terminal" )
+TOOLS_DESC_EN=( "Version control" "gh in the terminal" "TUI for Git" "Containers" "Daemonless containers" "Kubernetes client" "Infrastructure as code" "Automation" "API client (AUR)" "HTTP client in the terminal" "JSON processor" "Modern terminal with AI (AUR)" )
+TOOLS_DESC_ES=( "Control de versiones" "gh en terminal" "TUI para Git" "Contenedores" "Contenedores sin daemon" "Cliente de Kubernetes" "Infraestructura como código" "Automatización" "Cliente de APIs (AUR)" "Cliente HTTP en terminal" "Procesador de JSON" "Terminal moderna con IA (AUR)" )
+
+# --------------------------- Multimedia ---------------------------
+MEDIA_NAMES=( "VLC" "MPV" "Audacity" "GIMP" "Krita" "Inkscape" "Blender" "Kdenlive" "Shotcut" "HandBrake" "darktable" "Spotify" "FFmpeg" )
+MEDIA_PKGS=( "vlc" "mpv" "audacity" "gimp" "krita" "inkscape" "blender" "kdenlive" "shotcut" "handbrake" "darktable" "spotify" "ffmpeg" )
+MEDIA_DESC_EN=( "Media player" "Minimalist player" "Audio editor" "Image editor" "Digital painting" "Vector graphics" "3D modeling and rendering" "Video editor (KDE)" "Simple video editor" "Video converter/compressor" "RAW photo development" "Music streaming (AUR)" "Codecs and command-line utility" )
+MEDIA_DESC_ES=( "Reproductor multimedia" "Reproductor minimalista" "Editor de audio" "Editor de imágenes" "Pintura digital" "Gráficos vectoriales" "Modelado y render 3D" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Conversor/compresor de vídeo" "Revelado RAW de fotos" "Streaming de música (AUR)" "Códecs y utilidad de línea de comandos" )
+
+# ----------------------------- Office -----------------------------
+OFFICE_NAMES=( "LibreOffice" "OnlyOffice" "WPS Office" "Obsidian" "Joplin" "Thunderbird" "Okular" "Xournal++" "Calibre" "Logseq" )
+OFFICE_PKGS=( "libreoffice-fresh" "onlyoffice-bin" "wps-office" "obsidian" "joplin-desktop" "thunderbird" "okular" "xournalpp" "calibre" "logseq-desktop-bin" )
+OFFICE_DESC_EN=( "Full office suite" "MS Office compatible (AUR)" "Lightweight office suite (AUR)" "Linked Markdown notes" "Notes with sync (AUR)" "Email client" "PDF viewer (KDE)" "Handwritten notes / PDF" "E-book manager" "Notes and knowledge graph (AUR)" )
+OFFICE_DESC_ES=( "Suite ofimática completa" "Compatible con MS Office (AUR)" "Suite ofimática ligera (AUR)" "Notas Markdown enlazadas" "Notas con sincronización (AUR)" "Cliente de correo" "Visor de PDF (KDE)" "Notas manuscritas / PDF" "Gestor de libros electrónicos" "Notas y grafo de conocimiento (AUR)" )
+
+# ----------------------------- Internet ---------------------------
+NET_NAMES=( "Firefox" "Brave" "Chromium" "Google Chrome" "Vivaldi" "LibreWolf" "Telegram" "Signal" "Element" "Discord" "qBittorrent" "Zoom" )
+NET_PKGS=( "firefox" "brave-bin" "chromium" "google-chrome" "vivaldi" "librewolf-bin" "telegram-desktop" "signal-desktop" "element-desktop" "discord" "qbittorrent" "zoom" )
+NET_DESC_EN=( "Mozilla's browser" "Browser with ad blocking (AUR)" "Chrome's base browser" "Google's browser (AUR)" "Customizable browser" "Privacy-focused Firefox (AUR)" "Telegram messaging" "Encrypted messaging" "Matrix client" "Voice/text chat" "BitTorrent client" "Video conferencing (AUR)" )
+NET_DESC_ES=( "Navegador de Mozilla" "Navegador con bloqueo de anuncios (AUR)" "Navegador base de Chrome" "Navegador de Google (AUR)" "Navegador personalizable" "Firefox centrado en privacidad (AUR)" "Mensajería Telegram" "Mensajería cifrada" "Cliente de Matrix" "Chat de voz/texto" "Cliente BitTorrent" "Videoconferencias (AUR)" )
+
+# ------------------------ System & utilities ----------------------
+SYS_NAMES=( "CachyOS Kernel Manager" "CachyOS Hello" "Octopi" "btop" "htop" "Fastfetch" "GParted" "KDE Partition Manager" "Timeshift" "Flatpak" "GNOME Disks" "BleachBit" "yt-dlp" "Modern CLI utilities" )
+SYS_PKGS=( "cachyos-kernel-manager" "cachyos-hello" "octopi" "btop" "htop" "fastfetch" "gparted" "partitionmanager" "timeshift" "flatpak" "gnome-disk-utility" "bleachbit" "yt-dlp" "bat eza ripgrep fd fzf zoxide" )
+SYS_DESC_EN=( "CachyOS kernel manager" "CachyOS welcome/configuration" "Graphical package manager (pacman)" "Resource monitor (TUI)" "Classic process monitor" "System info (banner)" "Partition editor" "Partitions (KDE)" "System backups/snapshots" "Flatpak app support" "Disk management (GNOME)" "Junk file cleanup" "Video/audio downloader" "bat, eza, ripgrep, fd, fzf, zoxide" )
+SYS_DESC_ES=( "Gestor de kernels de CachyOS" "Bienvenida/configuración de CachyOS" "Gestor gráfico de paquetes (pacman)" "Monitor de recursos (TUI)" "Monitor de procesos clásico" "Info del sistema (banner)" "Editor de particiones" "Particiones (KDE)" "Copias/snapshots del sistema" "Soporte de apps Flatpak" "Gestión de discos (GNOME)" "Limpieza de archivos basura" "Descarga de vídeo/audio" "bat, eza, ripgrep, fd, fzf, zoxide" )
+
+# ==================================================================
+#  SECTION: INSTALL APPLICATIONS
+# ==================================================================
+
+# Generic multi-selection install menu.
+# $1 = category label ; $2 = names array ; $3 = pkgs array ; $4 = desc base name
+# (the description array is picked as "${4}_${UI_LANG^^}").
+category_menu() {
+  local label="$1"
+  local -n _names="$2" _pkgs="$3"
+  local -n _desc="${4}_${UI_LANG^^}"
+  local total=${#_names[@]}
+  while true; do
+    header "$(t menu_install_apps) › $label"
+    local i
+    for i in "${!_names[@]}"; do
+      printf '  %s%2d)%s %-26s %s%s%s\n' \
+        "$C_B" "$((i+1))" "$C_RESET" "${_names[$i]}" "$C_DIM" "${_desc[$i]}" "$C_RESET"
+    done
+    printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t install_all)"
+    printf '  %sL)%s %s\n' "$C_B" "$C_RESET" "$(printf "$(t view_list)" "${#LIST_NAMES[@]}")"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+
+    local line; read -rp "$(t cat_prompt)" line
+    [ "$line" = "0" ] && return
+    [[ "$line" =~ ^[lL]$ ]] && { list_menu; continue; }
+    line=${line//,/ }
+
+    # Build the selection (names and packages in parallel, one entry per app).
+    local -a sel_names=() sel_pkgs=()
+    if [[ "$line" =~ ^[aA]$ ]]; then
+      sel_names=("${_names[@]}")
+      sel_pkgs=("${_pkgs[@]}")
+    else
+      local n
+      for n in $line; do
+        if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "$total" ]; then
+          sel_names+=("${_names[$((n-1))]}")
+          sel_pkgs+=("${_pkgs[$((n-1))]}")
+        else
+          warn "$(printf "$(t ignored_value)" "$n")"
+        fi
+      done
+    fi
+
+    if [ "${#sel_pkgs[@]}" -eq 0 ]; then
+      warn "$(t nothing_selected)"; pause; continue
+    fi
+
+    # Install now, or save to the list to install together with the rest?
+    # Clean screen showing only this info.
+    clear 2>/dev/null || true
+    printf '%s%s%s\n\n' "$C_B" "$(printf "$(t selected)" "${sel_names[*]}")" "$C_RESET"
+    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_install_now)"
+    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_add_list)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t cancel)"
+    local acc; read -rp "$(t what_to_do)" acc
+    clear 2>/dev/null || true
+    case "$acc" in
+      1)
+        local -a flat=(); local e
+        for e in "${sel_pkgs[@]}"; do flat+=($e); done
+        install_packages "${flat[@]}"
+        pause ;;
+      2)
+        local j
+        for j in "${!sel_pkgs[@]}"; do
+          list_add "${sel_names[$j]}" "${sel_pkgs[$j]}"
+        done ;;   # add: repaint the category menu
+      *) : ;;   # cancel: repaint the category menu
+    esac
+  done
+}
+
+dev_individual_menu() {
+  while true; do
+    header "$(t dev_ind_title)"
+    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_editors)"
+    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_languages)"
+    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_databases)"
+    printf '  %s4)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_tools)"
+    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t dev_choose_type)" op
+    case "$op" in
+      1) category_menu "$(t subcat_editors)"   EDITORS_NAMES EDITORS_PKGS EDITORS_DESC ;;
+      2) category_menu "$(t subcat_languages)" LANGS_NAMES   LANGS_PKGS   LANGS_DESC ;;
+      3) category_menu "$(t subcat_databases)" DB_NAMES      DB_PKGS      DB_DESC ;;
+      4) category_menu "$(t subcat_tools)"     TOOLS_NAMES   TOOLS_PKGS   TOOLS_DESC ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+dev_section() {
+  while true; do
+    header "$(t dev_title)"
+    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_packs)"
+    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_individual)"
+    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t dev_choose_mode)" op
+    case "$op" in
+      1) category_menu "$(t subcat_packs)" "PACKS_NAMES_${UI_LANG^^}" PACKS_PKGS PACKS_DESC ;;
+      2) dev_individual_menu ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+apps_section() {
+  while true; do
+    header "$(t menu_install_apps)"
+    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cat_development)"
+    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cat_games)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cat_multimedia)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cat_office)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cat_internet)"
+    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t cat_system)"
+    printf '\n  %sL)%s %s\n' "$C_B" "$C_RESET" "$(printf "$(t list_menu)" "${#LIST_NAMES[@]}")"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+
+    local op; read -rp "$(t choose_category)" op
+    case "$op" in
+      1) dev_section ;;
+      2) category_menu "$(t cat_games)"      GAMES_NAMES  GAMES_PKGS  GAMES_DESC ;;
+      3) category_menu "$(t cat_multimedia)" MEDIA_NAMES  MEDIA_PKGS  MEDIA_DESC ;;
+      4) category_menu "$(t cat_office)"     OFFICE_NAMES OFFICE_PKGS OFFICE_DESC ;;
+      5) category_menu "$(t cat_internet)"   NET_NAMES    NET_PKGS    NET_DESC ;;
+      6) category_menu "$(t cat_system)"     SYS_NAMES    SYS_PKGS    SYS_DESC ;;
+      l|L) list_menu ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+# ==================================================================
+#  SECTION: CONFIGURATION (fixes and tweaks)
+# ==================================================================
+has_cachyos_fix() { [ -n "$CACHYOS_FIX" ] && [ -x "$CACHYOS_FIX" ]; }
+
+# Run cachyos-fix with the chosen UI language.
+run_fix() { CACHYOS_LANG="$UI_LANG" "$CACHYOS_FIX" "$@"; }
+
+apply_fix() { # $1 = subcommand ; $2 = description ; $3… = extra args
+  local sub="$1" desc="$2"; shift 2
+  if ! has_cachyos_fix; then
+    err "$(t fix_not_found_path)"
+    pause; return 1
+  fi
+  printf '\n%s%s%s\n' "$C_DIM" "$desc" "$C_RESET"
+  if confirm "$(t apply_fix_confirm)"; then
+    run_fix "$sub" "$@"
+  else
+    warn "$(t fix_skipped)"
+  fi
+  pause
+}
+
+# Keyboard layout selector. Prints the chosen code on stdout
+# (menus go to stderr so they don't pollute the capture). Empty = cancel.
+choose_layout() {
+  local -a codes=( es us latam fr de it pt gb br )
+  local -a names_en=( "Spanish (es)" "US English (us)" "Latin America (latam)" \
+                      "French (fr)" "German (de)" "Italian (it)" "Portuguese (pt)" \
+                      "UK English (gb)" "Brazilian Portuguese (br)" )
+  local -a names_es=( "Español (es)" "Inglés EE. UU. (us)" "Latinoamérica (latam)" \
+                      "Francés (fr)" "Alemán (de)" "Italiano (it)" "Portugués (pt)" \
+                      "Inglés RU (gb)" "Portugués Brasil (br)" )
+  local -n names="names_${UI_LANG}"
+  { printf '\n'
+    local i
+    for i in "${!codes[@]}"; do
+      printf '   %s%2d)%s %s\n' "$C_B" "$((i+1))" "$C_RESET" "${names[$i]}"
+    done
+    printf '   %s c)%s %s\n\n' "$C_B" "$C_RESET" "$(t layout_other)"
+  } >&2
+  local sel; read -rp "$(t layout_prompt)" sel
+  sel=${sel:-1}
+  if [[ "$sel" =~ ^[cC]$ ]]; then
+    local custom; read -rp "$(t layout_code_prompt)" custom
+    [ -n "$custom" ] && printf '%s' "$custom"
+    return
+  fi
+  if [[ "$sel" =~ ^[0-9]+$ ]] && [ "$sel" -ge 1 ] && [ "$sel" -le "${#codes[@]}" ]; then
+    printf '%s' "${codes[$((sel-1))]}"
+  fi
+}
+
+config_section() {
+  while true; do
+    header "$(t cfg_title)"
+    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_network)"
+    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_keyboard)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_mirrors)"
+    printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_apply_all)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+
+    local op; read -rp "$(t choose_category)" op
+    case "$op" in
+      1) fix_network_menu ;;
+      2) fix_keyboard_menu ;;
+      3) fix_mirrors_menu ;;
+      a|A)
+        if has_cachyos_fix; then
+          confirm "$(t cfg_apply_all_confirm)" && run_fix all
+        else
+          err "$(t fix_not_found)"
+        fi
+        pause ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+fix_network_menu() {
+  header "$(t net_title)"
+  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t net_wifi)"
+  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+  local op; read -rp "$(t choose)" op
+  case "$op" in
+    1) apply_fix wifi "$(t desc_wifi)" ;;
+    *) : ;;
+  esac
+}
+
+fix_keyboard_menu() {
+  header "$(t kbd_title)"
+  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_layout)"
+  printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_numlock)"
+  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+  local op; read -rp "$(t choose)" op
+  case "$op" in
+    1)
+      local lay; lay=$(choose_layout)
+      if [ -z "$lay" ]; then warn "$(t kbd_no_layout)"; pause; return; fi
+      apply_fix keyboard "$(printf "$(t desc_keyboard)" "$lay")" "$lay" ;;
+    2) apply_fix numlock "$(t desc_numlock)" ;;
+    *) : ;;
+  esac
+}
+
+fix_mirrors_menu() {
+  header "$(t mir_title)"
+  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t mir_refresh)"
+  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+  local op; read -rp "$(t choose)" op
+  case "$op" in
+    1) apply_fix mirrors "$(t desc_mirrors)" ;;
+    *) : ;;
+  esac
+}
+
+# ==================================================================
+#  SECTION: STATUS
+# ==================================================================
+status_section() {
+  header "$(t status_title)"
+  if has_cachyos_fix; then
+    run_fix status
+  else
+    warn "$(t fix_not_found_basic)"
+    printf '   WiFi power_save : %s\n' "$(iw dev wlan0 get power_save 2>/dev/null | awk -F': ' '/Power save/{print $2}')"
+  fi
+  pause
+}
+
+# ==================================================================
+#  LANGUAGE
+# ==================================================================
+# Startup / on-demand language chooser. Preselects the current UI_LANG.
+choose_language() {
+  header "$(t lang_title)"
+  local def_num def_lbl
+  if [ "$UI_LANG" = es ]; then def_num=2; def_lbl="Español"; else def_num=1; def_lbl="English"; fi
+  printf '  %s1)%s English\n'  "$C_B" "$C_RESET"
+  printf '  %s2)%s Español\n\n' "$C_B" "$C_RESET"
+  local sel; read -rp "$(printf 'Language / Idioma [%s]: ' "$def_lbl")" sel
+  sel=${sel:-$def_num}
+  case "$sel" in
+    1|en|EN|english|English|inglés|ingles) UI_LANG=en ;;
+    2|es|ES|español|espanol|Español|spanish|Spanish) UI_LANG=es ;;
+    *) : ;;  # keep current
+  esac
+  save_lang
+  ok "$(t lang_saved)"
+  pause
+}
+
+# ==================================================================
+#  MAIN MENU
+# ==================================================================
+main_menu() {
+  while true; do
+    header "$(printf "$(t main_pkgmgr)" "$(detect_helper)")"
+    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t main_install)"
+    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t main_config)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t main_status)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
+    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t exit)"
+
+    local op; read -rp "$(t main_choose)" op
+    case "$op" in
+      1) apps_section ;;
+      2) config_section ;;
+      3) status_section ;;
+      4) choose_language ;;
+      0|q|Q) header "$(t goodbye)"; exit 0 ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+# ---------------------------- Startup -----------------------------
+load_lang
+# First run (no env override, no saved choice): ask once and remember it.
+[ "$LANG_SOURCE" = default ] && choose_language
+main_menu
