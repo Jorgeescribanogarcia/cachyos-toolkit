@@ -59,3 +59,4 @@ ln -sf ~/Escritorio/cachyos-toolkit/bin/cachyos-fix       ~/.local/bin/
 ```
 
 Neither should be run as root; they ask for `sudo` when they need it.
+
