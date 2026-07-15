@@ -573,10 +573,10 @@ TOOLS_DESC_EN=( "Version control" "gh in the terminal" "TUI for Git" "Containers
 TOOLS_DESC_ES=( "Control de versiones" "gh en terminal" "TUI para Git" "Contenedores" "Contenedores sin daemon" "Cliente de Kubernetes" "Infraestructura como código" "Automatización" "Cliente de APIs (AUR)" "Cliente HTTP en terminal" "Procesador de JSON" "Terminal moderna con IA (AUR)" )
 
 # --------------------------- Multimedia ---------------------------
-MEDIA_NAMES=( "VLC" "MPV" "Audacity" "GIMP" "Krita" "Inkscape" "Blender" "Kdenlive" "Shotcut" "HandBrake" "darktable" "Spotify" "FFmpeg" )
-MEDIA_PKGS=( "vlc" "mpv" "audacity" "gimp" "krita" "inkscape" "blender" "kdenlive" "shotcut" "handbrake" "darktable" "spotify" "ffmpeg" )
-MEDIA_DESC_EN=( "Media player" "Minimalist player" "Audio editor" "Image editor" "Digital painting" "Vector graphics" "3D modeling and rendering" "Video editor (KDE)" "Simple video editor" "Video converter/compressor" "RAW photo development" "Music streaming (AUR)" "Codecs and command-line utility" )
-MEDIA_DESC_ES=( "Reproductor multimedia" "Reproductor minimalista" "Editor de audio" "Editor de imágenes" "Pintura digital" "Gráficos vectoriales" "Modelado y render 3D" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Conversor/compresor de vídeo" "Revelado RAW de fotos" "Streaming de música (AUR)" "Códecs y utilidad de línea de comandos" )
+MEDIA_NAMES=( "VLC" "MPV" "Audacity" "GIMP" "Krita" "Pinta" "Inkscape" "Blender" "Kdenlive" "Shotcut" "HandBrake" "darktable" "Spotify" "FFmpeg" )
+MEDIA_PKGS=( "vlc" "mpv" "audacity" "gimp" "krita" "pinta" "inkscape" "blender" "kdenlive" "shotcut" "handbrake" "darktable" "spotify" "ffmpeg" )
+MEDIA_DESC_EN=( "Media player" "Minimalist player" "Audio editor" "Image editor" "Digital painting" "Simple image editor (Paint.NET-like)" "Vector graphics" "3D modeling and rendering" "Video editor (KDE)" "Simple video editor" "Video converter/compressor" "RAW photo development" "Music streaming (AUR)" "Codecs and command-line utility" )
+MEDIA_DESC_ES=( "Reproductor multimedia" "Reproductor minimalista" "Editor de audio" "Editor de imágenes" "Pintura digital" "Editor de imágenes sencillo (alternativa a Paint.NET)" "Gráficos vectoriales" "Modelado y render 3D" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Conversor/compresor de vídeo" "Revelado RAW de fotos" "Streaming de música (AUR)" "Códecs y utilidad de línea de comandos" )
 
 # ----------------------------- Office -----------------------------
 OFFICE_NAMES=( "LibreOffice" "OnlyOffice" "WPS Office" "Obsidian" "Joplin" "Thunderbird" "Okular" "Xournal++" "Calibre" "Logseq" )
