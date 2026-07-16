@@ -20,12 +20,34 @@ Sections:
   - *Development*: complete **Packs** by stack (Web, Java, Rust, Python, Go,
     C/C++, .NET, Containers, XAMPP) and **individual install** by type
     (Editors/IDEs, Languages, Databases, Tools/DevOps).
-  - *Multimedia*, *Office*, *Internet* and *System & utilities*.
-  - **Installation list**: in any category you can «Install now» (direct flow)
-    or «Add to the list» to accumulate apps from several categories and
-    install them all at once (with options to remove or clear).
+  - *Multimedia* (playback: VLC, MPV, Spotify, FFmpeg).
+  - *Streaming and VTubing*: OBS Studio, the itch.io client (to install
+    veadotube-mini), Inochi Session/Creator, Chatterino, Streamlink.
+  - *Editing* (video, photo, audio): DaVinci Resolve, Kdenlive, Shotcut,
+    OpenShot, Blender, GIMP, Krita, Inkscape, darktable, Audacity…
+  - *Office*, *Internet* and *System & utilities*.
+  - Selecting an app offers «Install now», «Uninstall» or «Add to the list».
+  - **Installation list**: accumulate apps from several categories into a
+    selection and then **install all** or **uninstall all** at once (with
+    options to remove an item or clear it).
 - **Configuration** — fixes and tweaks by category (Network, Keyboard,
-  Mirrors & packages). Uses `cachyos-fix` as the engine.
+  Mirrors & packages) plus a **default web browser** picker (detects the
+  installed browsers and sets the default with `xdg-settings`). Uses
+  `cachyos-fix` as the engine for the fixes.
+- **Services** — a service/session manager built **dynamically** from systemd
+  (nothing hardcoded). It spans both the **system** manager (actions use `sudo`)
+  and the **user session** (`systemctl --user`, no `sudo`), with filters:
+  - *apps* (default) — the applications launched this session (Discord, Steam,
+    Brave…), shown with their friendly name; they run as `app-*` user units.
+  - *running* / *autostart* / *failed* / *all* — system services.
+  - *system* — low-level OS services (systemd's own units, `dbus`, `polkit`,
+    template units…), hidden from the other filters.
+
+  You can turn entries on/off, restart them and set autostart at boot; each
+  shows its live state. You can also type any unit by name. XAMPP is a special
+  case: since it can run outside systemd (its own `/opt/lampp` control script),
+  its state is read from the real processes and it is started/stopped through
+  that script, while autostart is set up via a generated systemd unit.
 - **System status**.
 
 It auto-detects `paru`/`yay`/`pacman`.
@@ -34,7 +56,7 @@ It auto-detects `paru`/`yay`/`pacman`.
 Fix engine, idempotent. Direct usage:
 
 ```bash
-cachyos-fix [all|keyboard|numlock|wifi|mirrors|status]
+cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|status]
 ```
 
 (Spanish aliases still work: `teclado`, `estado`, `mirror`.)
@@ -42,7 +64,13 @@ cachyos-fix [all|keyboard|numlock|wifi|mirrors|status]
 - **keyboard** — forces the `es` layout in X11/Xwayland apps (it produced `@`
   with Shift+2 when falling back to `us`). Accepts a layout code
   (`cachyos-fix keyboard fr`). Autostart in `~/.config/autostart/`.
-- **numlock** — keeps Num Lock on: KDE at login + `numlockx` live.
+- **numlock** `[on|off|unchanged]` — sets the numeric keypad behavior at login
+  (KDE) and applies it live with `numlockx`. `on` (default) keeps it on, `off`
+  keeps it off, `unchanged` leaves it to the firmware/last state.
+- **fnkeys** `[fkeys|media|auto]` — sets the Fn / F1–F12 top-row behavior via
+  the `hid_apple` `fnmode` (persistent + live). Only applies to keyboards using
+  that driver (Apple/«Magic» and some others); on most laptops the Fn behavior
+  is firmware/BIOS-controlled, and the fix says so instead of changing anything.
 - **wifi** — disables power saving on the `rtw88` driver (RTL8822BE), the
   cause of the disconnections (BEACON-LOSS). Writes to `/etc/…`, regenerates
   initramfs and reloads the driver only when needed.

@@ -6,7 +6,8 @@
 #   cachyos-fix            # apply ALL fixes
 #   cachyos-fix all        # same
 #   cachyos-fix teclado [code]  # keyboard layout (default es; e.g. teclado fr)
-#   cachyos-fix numlock    # only the Num Lock fix (keep it on)
+#   cachyos-fix numlock [on|off|unchanged]  # Num Lock behavior (default on)
+#   cachyos-fix fnkeys [fkeys|media|auto]   # Fn / F1–F12 behavior (hid_apple)
 #   cachyos-fix wifi       # only the WiFi fix (detects the driver)
 #   cachyos-fix mirrors    # refresh the mirror list and re-sync pacman
 #   cachyos-fix estado     # show the current status, without changing anything
@@ -49,15 +50,29 @@ MSG_EN[kbd_desktop_name]="Set keyboard (%s) on Xwayland"
 MSG_EN[kbd_desktop_comment]="Backup: forces the '%s' layout on X11/Xwayland apps at login"
 MSG_EN[kbd_live]="Applied to the current session (setxkbmap %s)"
 MSG_EN[kbd_no_x]="No active Xwayland now; it will apply at the next login."
-MSG_EN[num_title]="Num Lock fix (keep it on)"
-MSG_EN[num_kde6]="KDE configured to turn Num Lock on at login"
-MSG_EN[num_kde5]="KDE (Plasma 5) configured to turn Num Lock on at login"
+MSG_EN[num_title]="Num Lock configuration (numeric keypad)"
+MSG_EN[num_mode_on]="always on"
+MSG_EN[num_mode_off]="always off"
+MSG_EN[num_mode_unchanged]="unchanged"
+MSG_EN[num_kde_set]="KDE set to '%s' at login"
+MSG_EN[num_kde5_set]="KDE (Plasma 5) set to '%s' at login"
 MSG_EN[num_no_kwrite]="kwriteconfig not available; skipping the KDE configuration."
 MSG_EN[num_installing]="Installing 'numlockx' (official repos) to apply it live…"
 MSG_EN[num_installed]="numlockx installed"
-MSG_EN[num_install_fail]="Could not install numlockx; Num Lock will turn on at the next login."
-MSG_EN[num_live]="Num Lock turned on in the current session"
-MSG_EN[num_next_login]="It will turn on at the next login."
+MSG_EN[num_install_fail]="Could not install numlockx; it will apply at the next login."
+MSG_EN[num_live_on]="Num Lock turned on in the current session"
+MSG_EN[num_live_off]="Num Lock turned off in the current session"
+MSG_EN[num_unchanged_note]="Left unchanged; the firmware/last state decides at login."
+MSG_EN[num_next_login]="It will apply at the next login."
+MSG_EN[fn_title]="Function key (Fn) behavior"
+MSG_EN[fn_mode_fkeys]="function keys first (F1–F12)"
+MSG_EN[fn_mode_media]="multimedia keys first"
+MSG_EN[fn_mode_auto]="auto"
+MSG_EN[fn_not_supported]="This keyboard's Fn behavior is not OS-controllable (no hid_apple driver); it is set in the firmware/BIOS."
+MSG_EN[fn_persist]="Persistent setting written (hid_apple fnmode=%s)"
+MSG_EN[fn_persist_ok]="Persistent setting was already correct"
+MSG_EN[fn_live]="Applied to the current session (fnmode=%s)"
+MSG_EN[fn_next_boot]="Saved; it will apply at the next boot."
 MSG_EN[wifi_title]="WiFi fix (disconnections)"
 MSG_EN[wifi_detected]="WiFi interface detected: %s (driver: %s)"
 MSG_EN[wifi_unknown]="unknown"
@@ -93,16 +108,18 @@ MSG_EN[st_title]="Current status"
 MSG_EN[st_kbd_sys]="   Keyboard (system) : X11 Layout = %s  (expected: es)\n"
 MSG_EN[st_kbd_xwl]="   Keyboard (Xwayland): layout = %s  (expected: es)\n"
 MSG_EN[st_kbd_nox]="   Keyboard (Xwayland): no active X session\n"
-MSG_EN[st_num_on]="   Num Lock (KDE)    : on at login (0)  ✔\n"
+MSG_EN[st_num_on]="   Num Lock (KDE)    : on at login (0)\n"
 MSG_EN[st_num_off]="   Num Lock (KDE)    : off at login (1)\n"
-MSG_EN[st_num_unset]="   Num Lock (KDE)    : unset (expected: 0=on)\n"
+MSG_EN[st_num_unchanged]="   Num Lock (KDE)    : unchanged at login (2)\n"
+MSG_EN[st_num_unset]="   Num Lock (KDE)    : not set\n"
+MSG_EN[st_fn]="   Fn keys (hid_apple): fnmode = %s\n"
 MSG_EN[st_wifi]="   WiFi              : %s (driver: %s)\n"
 MSG_EN[st_wifi_ps]="   WiFi power_save   : %s\n"
 MSG_EN[st_aspm]="   disable_aspm      : %s  (expected: Y)\n"
 MSG_EN[st_lps]="   disable_lps_deep  : %s  (expected: Y)\n"
 MSG_EN[st_wifi_none]="   WiFi              : not detected\n"
 MSG_EN[unknown_opt]="Unknown option: %s"
-MSG_EN[usage]="Use: cachyos-fix [all|teclado|numlock|wifi|mirrors|estado]"
+MSG_EN[usage]="Use: cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|status]"
 
 MSG_ES[err_root_1]="No lo ejecutes como root ni con 'sudo cachyos-fix'."
 MSG_ES[err_root_2]="Ejecútalo como usuario normal: 'cachyos-fix' (pedirá sudo cuando lo necesite)."
@@ -116,15 +133,29 @@ MSG_ES[kbd_desktop_name]="Fijar teclado (%s) en Xwayland"
 MSG_ES[kbd_desktop_comment]="Respaldo: fuerza la distribucion '%s' en apps X11/Xwayland al iniciar sesion"
 MSG_ES[kbd_live]="Aplicado en la sesión actual (setxkbmap %s)"
 MSG_ES[kbd_no_x]="No hay Xwayland activo ahora; se aplicará en el próximo inicio de sesión."
-MSG_ES[num_title]="Fix de Bloq Num (mantenerlo activado)"
-MSG_ES[num_kde6]="KDE configurado para encender Bloq Num al iniciar sesión"
-MSG_ES[num_kde5]="KDE (Plasma 5) configurado para encender Bloq Num al iniciar sesión"
+MSG_ES[num_title]="Configuración de Bloq Num (teclado numérico)"
+MSG_ES[num_mode_on]="siempre encendido"
+MSG_ES[num_mode_off]="siempre apagado"
+MSG_ES[num_mode_unchanged]="sin cambios"
+MSG_ES[num_kde_set]="KDE configurado a '%s' al iniciar sesión"
+MSG_ES[num_kde5_set]="KDE (Plasma 5) configurado a '%s' al iniciar sesión"
 MSG_ES[num_no_kwrite]="kwriteconfig no disponible; omito la configuración de KDE."
 MSG_ES[num_installing]="Instalando 'numlockx' (repos oficiales) para aplicarlo en caliente…"
 MSG_ES[num_installed]="numlockx instalado"
-MSG_ES[num_install_fail]="No pude instalar numlockx; Bloq Num se activará en el próximo inicio de sesión."
-MSG_ES[num_live]="Bloq Num activado en la sesión actual"
-MSG_ES[num_next_login]="Se activará en el próximo inicio de sesión."
+MSG_ES[num_install_fail]="No pude instalar numlockx; se aplicará en el próximo inicio de sesión."
+MSG_ES[num_live_on]="Bloq Num activado en la sesión actual"
+MSG_ES[num_live_off]="Bloq Num desactivado en la sesión actual"
+MSG_ES[num_unchanged_note]="Se deja sin cambios; lo decide el firmware/último estado al iniciar."
+MSG_ES[num_next_login]="Se aplicará en el próximo inicio de sesión."
+MSG_ES[fn_title]="Comportamiento de la tecla Fn"
+MSG_ES[fn_mode_fkeys]="teclas de función primero (F1–F12)"
+MSG_ES[fn_mode_media]="teclas multimedia primero"
+MSG_ES[fn_mode_auto]="automático"
+MSG_ES[fn_not_supported]="El Fn de este teclado no se controla desde el SO (sin driver hid_apple); lo fija la BIOS/firmware."
+MSG_ES[fn_persist]="Ajuste persistente escrito (hid_apple fnmode=%s)"
+MSG_ES[fn_persist_ok]="El ajuste persistente ya estaba correcto"
+MSG_ES[fn_live]="Aplicado en la sesión actual (fnmode=%s)"
+MSG_ES[fn_next_boot]="Guardado; se aplicará en el próximo arranque."
 MSG_ES[wifi_title]="Fix de WiFi (desconexiones)"
 MSG_ES[wifi_detected]="Interfaz WiFi detectada: %s (driver: %s)"
 MSG_ES[wifi_unknown]="desconocido"
@@ -160,16 +191,18 @@ MSG_ES[st_title]="Estado actual"
 MSG_ES[st_kbd_sys]="   Teclado (sistema) : X11 Layout = %s  (esperado: es)\n"
 MSG_ES[st_kbd_xwl]="   Teclado (Xwayland): layout = %s  (esperado: es)\n"
 MSG_ES[st_kbd_nox]="   Teclado (Xwayland): sin sesión X activa\n"
-MSG_ES[st_num_on]="   Bloq Num (KDE)    : encender al iniciar (0)  ✔\n"
+MSG_ES[st_num_on]="   Bloq Num (KDE)    : encender al iniciar (0)\n"
 MSG_ES[st_num_off]="   Bloq Num (KDE)    : apagar al iniciar (1)\n"
-MSG_ES[st_num_unset]="   Bloq Num (KDE)    : sin fijar (esperado: 0=encender)\n"
+MSG_ES[st_num_unchanged]="   Bloq Num (KDE)    : sin cambios al iniciar (2)\n"
+MSG_ES[st_num_unset]="   Bloq Num (KDE)    : sin fijar\n"
+MSG_ES[st_fn]="   Fn (hid_apple)    : fnmode = %s\n"
 MSG_ES[st_wifi]="   WiFi              : %s (driver: %s)\n"
 MSG_ES[st_wifi_ps]="   WiFi power_save   : %s\n"
 MSG_ES[st_aspm]="   disable_aspm      : %s  (esperado: Y)\n"
 MSG_ES[st_lps]="   disable_lps_deep  : %s  (esperado: Y)\n"
 MSG_ES[st_wifi_none]="   WiFi              : no detectado\n"
 MSG_ES[unknown_opt]="Opción desconocida: %s"
-MSG_ES[usage]="Usa: cachyos-fix [all|teclado|numlock|wifi|mirrors|estado]"
+MSG_ES[usage]="Usa: cachyos-fix [all|teclado|numlock|fnkeys|wifi|mirrors|estado]"
 
 t() {
   local key="$1"
@@ -253,24 +286,40 @@ DESKTOP
 }
 
 # ==========================================================
-#  FIX 2 — Num Lock: keep it always on
+#  FIX 2 — Num Lock: configure the numeric keypad behavior
 # ==========================================================
+# $1 = mode: on (always on), off (always off), unchanged (leave firmware/last
+# state). Defaults to 'on' (backward compatible with the old fixed behavior).
 fix_numlock() {
+  local mode="${1:-on}"
+  case "$mode" in on|off|unchanged) ;; *) mode=on ;; esac
   log "$(t num_title)"
 
-  # 1) KDE Plasma: turn Num Lock on at login (kcminputrc).
+  # 1) KDE Plasma: Num Lock state at login (kcminputrc).
   #    NumLock=0 -> on ; 1 -> off ; 2 -> unchanged.
+  local kval mlabel
+  case "$mode" in
+    on)        kval=0; mlabel="$(t num_mode_on)" ;;
+    off)       kval=1; mlabel="$(t num_mode_off)" ;;
+    unchanged) kval=2; mlabel="$(t num_mode_unchanged)" ;;
+  esac
   if command -v kwriteconfig6 >/dev/null 2>&1; then
-    kwriteconfig6 --file kcminputrc --group Keyboard --key NumLock 0 \
-      && ok "$(t num_kde6)"
+    kwriteconfig6 --file kcminputrc --group Keyboard --key NumLock "$kval" \
+      && ok "$(printf "$(t num_kde_set)" "$mlabel")"
   elif command -v kwriteconfig5 >/dev/null 2>&1; then
-    kwriteconfig5 --file kcminputrc --group Keyboard --key NumLock 0 \
-      && ok "$(t num_kde5)"
+    kwriteconfig5 --file kcminputrc --group Keyboard --key NumLock "$kval" \
+      && ok "$(printf "$(t num_kde5_set)" "$mlabel")"
   else
     warn "$(t num_no_kwrite)"
   fi
 
-  # 2) 'numlockx' lets us apply it live. It is in the official repos.
+  # 'unchanged' just defers to the firmware/last state: no live change.
+  if [ "$mode" = unchanged ]; then
+    ok "$(t num_unchanged_note)"
+    return
+  fi
+
+  # 2) 'numlockx' lets us apply it live (on/off). It is in the official repos.
   if ! command -v numlockx >/dev/null 2>&1; then
     log "$(t num_installing)"
     sudo pacman -S --needed --noconfirm numlockx \
@@ -280,9 +329,47 @@ fix_numlock() {
 
   # 3) Apply it right now in the current session (no relogin).
   if command -v numlockx >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
-    numlockx on 2>/dev/null && ok "$(t num_live)"
+    numlockx "$mode" 2>/dev/null && ok "$(t "num_live_$mode")"
   else
     warn "$(t num_next_login)"
+  fi
+}
+
+# ==========================================================
+#  FIX — Function keys (Fn) behavior via hid_apple fnmode
+# ==========================================================
+# $1 = mode: fkeys (F1–F12 first), media (multimedia first), auto. Only works
+# on keyboards driven by hid_apple (Apple/«Magic» and some third-party ones);
+# on most laptops the Fn behavior is set in the firmware/BIOS and is not
+# OS-controllable, so we detect that and bail out instead of writing junk.
+fix_fnkeys() {
+  local mode="${1:-fkeys}" val mlabel
+  case "$mode" in
+    fkeys|f|fk) val=2; mlabel="$(t fn_mode_fkeys)" ;;
+    media|m)    val=1; mlabel="$(t fn_mode_media)" ;;
+    auto|a)     val=3; mlabel="$(t fn_mode_auto)" ;;
+    *)          mode=fkeys; val=2; mlabel="$(t fn_mode_fkeys)" ;;
+  esac
+  log "$(printf "$(t fn_title)") — $mlabel"
+
+  if [ ! -d /sys/module/hid_apple ]; then
+    warn "$(t fn_not_supported)"
+    return 0
+  fi
+
+  # 1) Persist across boots via a modprobe option.
+  if write_root_file /etc/modprobe.d/hid_apple.conf "options hid_apple fnmode=$val"; then
+    ok "$(printf "$(t fn_persist)" "$val")"
+  else
+    ok "$(t fn_persist_ok)"
+  fi
+
+  # 2) Apply live to the loaded module (no reboot).
+  local sysf=/sys/module/hid_apple/parameters/fnmode
+  if [ -e "$sysf" ] && echo "$val" | sudo tee "$sysf" >/dev/null 2>&1; then
+    ok "$(printf "$(t fn_live)" "$val")"
+  else
+    warn "$(t fn_next_boot)"
   fi
 }
 
@@ -444,8 +531,12 @@ status() {
     case "$nl" in
       0) printf "$(t st_num_on)" ;;
       1) printf "$(t st_num_off)" ;;
+      2) printf "$(t st_num_unchanged)" ;;
       *) printf "$(t st_num_unset)" ;;
     esac
+  fi
+  if [ -e /sys/module/hid_apple/parameters/fnmode ]; then
+    printf "$(t st_fn)" "$(cat /sys/module/hid_apple/parameters/fnmode 2>/dev/null || echo '?')"
   fi
   local winfo wiface wdriver
   if winfo=$(detect_wifi); then
@@ -466,7 +557,8 @@ status() {
 # ==========================================================
 case "${1:-all}" in
   teclado|keyboard|kb)     fix_keyboard "${2:-}" ;;
-  numlock|numlk|bloqnum)   fix_numlock ;;
+  numlock|numlk|bloqnum)   fix_numlock "${2:-}" ;;
+  fnkeys|fn|fnmode)        fix_fnkeys "${2:-}" ;;
   wifi)                    fix_wifi ;;
   mirrors|mirror|espejos)  fix_mirrors ;;
   estado|status)           status ;;

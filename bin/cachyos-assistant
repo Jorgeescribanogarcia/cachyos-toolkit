@@ -77,6 +77,10 @@ MSG_EN[tmpdir_fail]="Could not create a temporary directory."
 MSG_EN[install_with]="Will be installed with «%s»: %s"
 MSG_EN[confirm_install]="Confirm the installation?"
 MSG_EN[install_cancelled]="Installation cancelled."
+MSG_EN[uninstall_with]="Will be uninstalled: %s"
+MSG_EN[confirm_uninstall]="Confirm the uninstall?"
+MSG_EN[uninstall_cancelled]="Uninstall cancelled."
+MSG_EN[uninstall_none_installed]="None of those are installed."
 MSG_EN[pacman_only]="Without paru/yay: only official-repo packages will be installed (AUR ones will fail)."
 MSG_EN[aur_env_cancel]="Installation cancelled: the AUR build environment is missing."
 MSG_EN[list_title]="Install applications › Installation list"
@@ -84,7 +88,9 @@ MSG_EN[list_added]="Added to the list: %s"
 MSG_EN[list_already]="Already in the list: %s"
 MSG_EN[list_empty_hint]="The list is empty. Add apps from any category."
 MSG_EN[list_done]="List installed and cleared."
+MSG_EN[list_uninstall_done]="List uninstalled and cleared."
 MSG_EN[list_install_all]="Install EVERYTHING in the list"
+MSG_EN[list_uninstall_all]="Uninstall EVERYTHING in the list"
 MSG_EN[list_remove]="Remove an item (nº)"
 MSG_EN[list_clear]="Clear the list"
 MSG_EN[list_remove_prompt]="Nº to remove: "
@@ -100,6 +106,7 @@ MSG_EN[nothing_selected]="Nothing selected."
 MSG_EN[selected]="Selected: %s"
 MSG_EN[opt_install_now]="Install now"
 MSG_EN[opt_add_list]="Add to the installation list"
+MSG_EN[opt_uninstall]="Uninstall"
 MSG_EN[cancel]="Cancel"
 MSG_EN[what_to_do]="What should I do with the selection? "
 MSG_EN[menu_install_apps]="Install applications"
@@ -107,6 +114,8 @@ MSG_EN[back]="Back"
 MSG_EN[cat_development]="Development"
 MSG_EN[cat_games]="Games"
 MSG_EN[cat_multimedia]="Multimedia"
+MSG_EN[cat_streaming]="Streaming and VTubing"
+MSG_EN[cat_editing]="Editing (video, photo, audio)"
 MSG_EN[cat_office]="Office"
 MSG_EN[cat_internet]="Internet"
 MSG_EN[cat_system]="System and utilities"
@@ -131,6 +140,7 @@ MSG_EN[cfg_title]="Configuration"
 MSG_EN[cfg_network]="Network and connectivity"
 MSG_EN[cfg_keyboard]="Keyboard and language"
 MSG_EN[cfg_mirrors]="Mirrors and packages"
+MSG_EN[cfg_browser]="Default web browser"
 MSG_EN[cfg_apply_all]="Apply ALL fixes"
 MSG_EN[cfg_apply_all_confirm]="Apply ALL known fixes?"
 MSG_EN[fix_not_found]="cachyos-fix not found."
@@ -143,16 +153,42 @@ MSG_EN[net_wifi]="WiFi disconnections (rtw88 / RTL8822BE)"
 MSG_EN[desc_wifi]="Disables power saving on the rtw88 driver (power-save, ASPM and LPS-deep), the cause of the BEACON-LOSS bursts. WiFi drops for a few seconds if the driver has to be reloaded."
 MSG_EN[kbd_title]="Configuration › Keyboard and language"
 MSG_EN[kbd_layout]="Keyboard layout in X11/Xwayland apps (choose language)"
-MSG_EN[kbd_numlock]="Num Lock: keep it always on"
+MSG_EN[kbd_numlock]="Num Lock behavior (numeric keypad)"
 MSG_EN[kbd_no_layout]="No layout chosen."
+MSG_EN[numlock_choose_prompt]="Choose behavior [1]: "
+MSG_EN[numlock_opt_on]="Always on at login"
+MSG_EN[numlock_opt_off]="Always off at login"
+MSG_EN[numlock_opt_unchanged]="Leave it unchanged (firmware/last state)"
+MSG_EN[numlock_no_choice]="No option chosen."
 MSG_EN[desc_keyboard]="Forces the '%s' layout in Xwayland too (X11/Electron apps like VS Code can fall back to 'us'). It sets it system-wide with localectl, leaves a backup autostart entry and applies it live."
-MSG_EN[desc_numlock]="Keeps Num Lock (numeric keypad) on: configures KDE to enable it at login and applies it right now (installs numlockx from the official repos if needed)."
+MSG_EN[desc_numlock_on]="Turns the numeric keypad on at login (KDE) and applies it right now (installs numlockx from the official repos if needed)."
+MSG_EN[desc_numlock_off]="Turns the numeric keypad off at login (KDE) and applies it right now."
+MSG_EN[desc_numlock_unchanged]="Leaves the numeric keypad as the firmware/last state sets it; nothing is forced at login."
+MSG_EN[kbd_fnkeys]="Function key (Fn) behavior"
+MSG_EN[fn_choose_prompt]="Choose behavior [1]: "
+MSG_EN[fn_opt_fkeys]="Function keys F1–F12 (press Fn for media)"
+MSG_EN[fn_opt_media]="Multimedia keys (press Fn for F1–F12)"
+MSG_EN[fn_opt_auto]="Auto (let the driver decide)"
+MSG_EN[fn_no_choice]="No option chosen."
+MSG_EN[desc_fn_fkeys]="Top row acts as F1–F12 by default; multimedia/hardware actions need Fn. Only works on keyboards using the hid_apple driver (Apple/«Magic» and some others); on most laptops the Fn behavior is set in the firmware/BIOS."
+MSG_EN[desc_fn_media]="Top row acts as multimedia/hardware keys by default; F1–F12 need Fn. Same hid_apple requirement as above."
+MSG_EN[desc_fn_auto]="Lets the driver decide (hid_apple auto mode). Same hid_apple requirement as above."
 MSG_EN[layout_prompt]="Choose layout [1]: "
 MSG_EN[layout_other]="Other (type a code, e.g. ru, no, cz)"
 MSG_EN[layout_code_prompt]="Layout code: "
 MSG_EN[mir_title]="Configuration › Mirrors and packages"
 MSG_EN[mir_refresh]="Refresh mirrors and re-sync pacman"
 MSG_EN[desc_mirrors]="Reorders the mirror list (with cachyos-rate-mirrors, or rate-mirrors/reflector as a fallback) to keep the fastest and most up-to-date ones, and forces pacman to re-download the databases (pacman -Syy). Fixes the 404 errors on update when mirrors are out of sync."
+MSG_EN[browser_title]="Configuration › Default web browser"
+MSG_EN[browser_current]="Current default: %s"
+MSG_EN[browser_current_none]="Current default: (not set)"
+MSG_EN[browser_none_found]="No web browsers detected on this system."
+MSG_EN[browser_choose]="Choose the default browser (nº), 0=back: "
+MSG_EN[browser_set_ok]="Default browser set to: %s"
+MSG_EN[browser_set_fail]="Could not set the default browser."
+MSG_EN[browser_no_xdg]="'xdg-settings' not found; it comes in the 'xdg-utils' package."
+MSG_EN[browser_install_xdg]="Install 'xdg-utils' now?"
+MSG_EN[browser_xdg_fail]="Could not install 'xdg-utils'."
 MSG_EN[status_title]="System status"
 MSG_EN[fix_not_found_basic]="cachyos-fix not found; showing the basics:"
 MSG_EN[main_pkgmgr]="Package manager: %s"
@@ -164,6 +200,44 @@ MSG_EN[exit]="Exit"
 MSG_EN[main_choose]="Choose an option: "
 MSG_EN[lang_title]="Language / Idioma"
 MSG_EN[lang_saved]="Language set to English."
+MSG_EN[main_services]="Services"
+# Services (systemd manager)
+MSG_EN[svc_title]="Services"
+MSG_EN[svc_none_in_filter]="No services match this filter."
+MSG_EN[svc_filter_label]="Filter: %s"
+MSG_EN[svc_filter_apps]="apps (this session)"
+MSG_EN[svc_filter_running]="running (active now)"
+MSG_EN[svc_filter_enabled]="autostart (enabled at boot)"
+MSG_EN[svc_filter_failed]="failed"
+MSG_EN[svc_filter_all]="all (excluding system)"
+MSG_EN[svc_filter_system]="system / default services"
+MSG_EN[svc_change_filter]="Change filter"
+MSG_EN[svc_choose]="Choose a service (nº), 'f'=filter, 'r'=refresh, 'n'=other unit, 0=back: "
+MSG_EN[svc_refresh]="Refresh (re-read the states)"
+MSG_EN[svc_other_unit]="Manage another unit by name"
+MSG_EN[svc_unit_prompt]="Unit name (e.g. sshd, docker): "
+MSG_EN[svc_not_available]="That unit is not available on this system."
+MSG_EN[svc_autostart_na]="Autostart is not configured for this service."
+MSG_EN[svc_static_info]="This service starts on demand (socket or another unit); it has no boot autostart switch."
+MSG_EN[svc_is_masked]="This service is masked (blocked by the system)."
+MSG_EN[svc_unmask_ask]="Unmask it first?"
+MSG_EN[svc_running]="running"
+MSG_EN[svc_stopped]="stopped"
+MSG_EN[svc_failed]="failed"
+MSG_EN[svc_enabled]="autostart on"
+MSG_EN[svc_disabled]="autostart off"
+MSG_EN[svc_masked]="masked"
+MSG_EN[svc_actions_title]="Service: %s"
+MSG_EN[svc_start]="Start now"
+MSG_EN[svc_stop]="Stop now"
+MSG_EN[svc_restart]="Restart"
+MSG_EN[svc_enable]="Enable autostart at boot"
+MSG_EN[svc_disable]="Disable autostart at boot"
+MSG_EN[svc_view_status]="View detailed status"
+MSG_EN[svc_done]="Done."
+MSG_EN[svc_action_fail]="The action failed (see the message above)."
+MSG_EN[svc_xampp_created]="Autostart service created. XAMPP will now start at boot when enabled."
+MSG_EN[svc_xampp_create_fail]="Could not create the xampp autostart service."
 
 # --- Spanish catalog ---
 MSG_ES[app_title]="Asistente de CachyOS"
@@ -188,6 +262,10 @@ MSG_ES[tmpdir_fail]="No pude crear un directorio temporal."
 MSG_ES[install_with]="Se instalarán con «%s»: %s"
 MSG_ES[confirm_install]="¿Confirmas la instalación?"
 MSG_ES[install_cancelled]="Instalación cancelada."
+MSG_ES[uninstall_with]="Se desinstalarán: %s"
+MSG_ES[confirm_uninstall]="¿Confirmas la desinstalación?"
+MSG_ES[uninstall_cancelled]="Desinstalación cancelada."
+MSG_ES[uninstall_none_installed]="Ninguna de esas está instalada."
 MSG_ES[pacman_only]="Sin paru/yay: solo se instalarán paquetes de los repos oficiales (los de AUR fallarán)."
 MSG_ES[aur_env_cancel]="Instalación cancelada: falta el entorno de compilación de AUR."
 MSG_ES[list_title]="Instalar aplicaciones › Lista de instalación"
@@ -195,7 +273,9 @@ MSG_ES[list_added]="Añadido a la lista: %s"
 MSG_ES[list_already]="Ya estaba en la lista: %s"
 MSG_ES[list_empty_hint]="La lista está vacía. Añade apps desde cualquier categoría."
 MSG_ES[list_done]="Lista instalada y vaciada."
+MSG_ES[list_uninstall_done]="Lista desinstalada y vaciada."
 MSG_ES[list_install_all]="Instalar TODO lo de la lista"
+MSG_ES[list_uninstall_all]="Desinstalar TODO lo de la lista"
 MSG_ES[list_remove]="Quitar un elemento (nº)"
 MSG_ES[list_clear]="Vaciar la lista"
 MSG_ES[list_remove_prompt]="Nº a quitar: "
@@ -211,6 +291,7 @@ MSG_ES[nothing_selected]="No se seleccionó nada."
 MSG_ES[selected]="Seleccionado: %s"
 MSG_ES[opt_install_now]="Instalar ahora"
 MSG_ES[opt_add_list]="Añadir a la lista de instalación"
+MSG_ES[opt_uninstall]="Desinstalar"
 MSG_ES[cancel]="Cancelar"
 MSG_ES[what_to_do]="¿Qué hago con lo seleccionado? "
 MSG_ES[menu_install_apps]="Instalar aplicaciones"
@@ -218,6 +299,8 @@ MSG_ES[back]="Volver"
 MSG_ES[cat_development]="Desarrollo"
 MSG_ES[cat_games]="Juegos"
 MSG_ES[cat_multimedia]="Multimedia"
+MSG_ES[cat_streaming]="Streaming y VTubing"
+MSG_ES[cat_editing]="Edición (vídeo, foto, audio)"
 MSG_ES[cat_office]="Ofimática"
 MSG_ES[cat_internet]="Internet"
 MSG_ES[cat_system]="Sistema y utilidades"
@@ -242,6 +325,7 @@ MSG_ES[cfg_title]="Configuración"
 MSG_ES[cfg_network]="Red y conectividad"
 MSG_ES[cfg_keyboard]="Teclado e idioma"
 MSG_ES[cfg_mirrors]="Mirrors y paquetes"
+MSG_ES[cfg_browser]="Navegador web predeterminado"
 MSG_ES[cfg_apply_all]="Aplicar TODOS los arreglos"
 MSG_ES[cfg_apply_all_confirm]="¿Aplicar TODOS los arreglos conocidos?"
 MSG_ES[fix_not_found]="No se encuentra 'cachyos-fix'."
@@ -254,16 +338,42 @@ MSG_ES[net_wifi]="Desconexiones de WiFi (rtw88 / RTL8822BE)"
 MSG_ES[desc_wifi]="Desactiva el ahorro de energía del driver rtw88 (power-save, ASPM y LPS-deep), causa de las ráfagas de BEACON-LOSS. Corta el WiFi unos segundos si hace falta recargar el driver."
 MSG_ES[kbd_title]="Configuración › Teclado e idioma"
 MSG_ES[kbd_layout]="Distribución de teclado en apps X11/Xwayland (elige idioma)"
-MSG_ES[kbd_numlock]="Bloq Num: mantenerlo siempre activado"
+MSG_ES[kbd_numlock]="Comportamiento de Bloq Num (teclado numérico)"
 MSG_ES[kbd_no_layout]="No se eligió distribución."
+MSG_ES[numlock_choose_prompt]="Elige el comportamiento [1]: "
+MSG_ES[numlock_opt_on]="Siempre encendido al iniciar sesión"
+MSG_ES[numlock_opt_off]="Siempre apagado al iniciar sesión"
+MSG_ES[numlock_opt_unchanged]="Dejarlo sin cambios (firmware/último estado)"
+MSG_ES[numlock_no_choice]="No se eligió ninguna opción."
 MSG_ES[desc_keyboard]="Fuerza la distribución '%s' también en Xwayland (las apps X11/Electron como VS Code pueden caer en 'us'). Lo fija a nivel de sistema con localectl, deja un autostart de respaldo y lo aplica en caliente."
-MSG_ES[desc_numlock]="Mantiene el Bloq Num (teclado numérico) activado: configura KDE para encenderlo al iniciar sesión y lo aplica ahora mismo (instala numlockx de los repos oficiales si hace falta)."
+MSG_ES[desc_numlock_on]="Enciende el teclado numérico al iniciar sesión (KDE) y lo aplica ahora mismo (instala numlockx de los repos oficiales si hace falta)."
+MSG_ES[desc_numlock_off]="Apaga el teclado numérico al iniciar sesión (KDE) y lo aplica ahora mismo."
+MSG_ES[desc_numlock_unchanged]="Deja el teclado numérico como lo ponga el firmware/último estado; no se fuerza nada al iniciar sesión."
+MSG_ES[kbd_fnkeys]="Comportamiento de la tecla Fn"
+MSG_ES[fn_choose_prompt]="Elige el comportamiento [1]: "
+MSG_ES[fn_opt_fkeys]="Teclas de función F1–F12 (pulsa Fn para multimedia)"
+MSG_ES[fn_opt_media]="Teclas multimedia (pulsa Fn para F1–F12)"
+MSG_ES[fn_opt_auto]="Automático (que lo decida el driver)"
+MSG_ES[fn_no_choice]="No se eligió ninguna opción."
+MSG_ES[desc_fn_fkeys]="La fila superior actúa como F1–F12 por defecto; las acciones multimedia/hardware necesitan Fn. Solo funciona en teclados con el driver hid_apple (Apple/«Magic» y algunos otros); en la mayoría de portátiles el Fn lo fija la BIOS/firmware."
+MSG_ES[desc_fn_media]="La fila superior actúa como teclas multimedia/hardware por defecto; F1–F12 necesitan Fn. Mismo requisito de hid_apple que arriba."
+MSG_ES[desc_fn_auto]="Que lo decida el driver (modo automático de hid_apple). Mismo requisito de hid_apple que arriba."
 MSG_ES[layout_prompt]="Elige distribución [1]: "
 MSG_ES[layout_other]="Otro (escribir código, p. ej. ru, no, cz)"
 MSG_ES[layout_code_prompt]="Código de distribución: "
 MSG_ES[mir_title]="Configuración › Mirrors y paquetes"
 MSG_ES[mir_refresh]="Refrescar mirrors y re-sincronizar pacman"
 MSG_ES[desc_mirrors]="Reordena la lista de mirrors (con cachyos-rate-mirrors, o rate-mirrors/reflector como respaldo) para quedarte con los más rápidos y actualizados, y fuerza a pacman a re-descargar las bases de datos (pacman -Syy). Soluciona los errores 404 al actualizar cuando los mirrors están desincronizados."
+MSG_ES[browser_title]="Configuración › Navegador web predeterminado"
+MSG_ES[browser_current]="Predeterminado actual: %s"
+MSG_ES[browser_current_none]="Predeterminado actual: (sin definir)"
+MSG_ES[browser_none_found]="No se detectó ningún navegador web en el sistema."
+MSG_ES[browser_choose]="Elige el navegador predeterminado (nº), 0=volver: "
+MSG_ES[browser_set_ok]="Navegador predeterminado fijado a: %s"
+MSG_ES[browser_set_fail]="No se pudo fijar el navegador predeterminado."
+MSG_ES[browser_no_xdg]="No se encuentra 'xdg-settings'; viene en el paquete 'xdg-utils'."
+MSG_ES[browser_install_xdg]="¿Instalar 'xdg-utils' ahora?"
+MSG_ES[browser_xdg_fail]="No se pudo instalar 'xdg-utils'."
 MSG_ES[status_title]="Estado del sistema"
 MSG_ES[fix_not_found_basic]="No se encuentra 'cachyos-fix'; muestro lo básico:"
 MSG_ES[main_pkgmgr]="Gestor de paquetes: %s"
@@ -275,6 +385,44 @@ MSG_ES[exit]="Salir"
 MSG_ES[main_choose]="Elige una opción: "
 MSG_ES[lang_title]="Idioma / Language"
 MSG_ES[lang_saved]="Idioma cambiado a español."
+MSG_ES[main_services]="Servicios"
+# Servicios (gestor de systemd)
+MSG_ES[svc_title]="Servicios"
+MSG_ES[svc_none_in_filter]="Ningún servicio coincide con este filtro."
+MSG_ES[svc_filter_label]="Filtro: %s"
+MSG_ES[svc_filter_apps]="apps (esta sesión)"
+MSG_ES[svc_filter_running]="en marcha (activos ahora)"
+MSG_ES[svc_filter_enabled]="autoarranque (activados al inicio)"
+MSG_ES[svc_filter_failed]="con error"
+MSG_ES[svc_filter_all]="todos (excepto del sistema)"
+MSG_ES[svc_filter_system]="del sistema / por defecto"
+MSG_ES[svc_change_filter]="Cambiar filtro"
+MSG_ES[svc_choose]="Elige un servicio (nº), 'f'=filtro, 'r'=refrescar, 'n'=otra unidad, 0=volver: "
+MSG_ES[svc_refresh]="Refrescar (releer los estados)"
+MSG_ES[svc_other_unit]="Gestionar otra unidad por nombre"
+MSG_ES[svc_unit_prompt]="Nombre de la unidad (p. ej. sshd, docker): "
+MSG_ES[svc_not_available]="Esa unidad no está disponible en este sistema."
+MSG_ES[svc_autostart_na]="El arranque automático no está configurado para este servicio."
+MSG_ES[svc_static_info]="Este servicio arranca bajo demanda (socket u otra unidad); no tiene interruptor de arranque al inicio."
+MSG_ES[svc_is_masked]="Este servicio está enmascarado (bloqueado por el sistema)."
+MSG_ES[svc_unmask_ask]="¿Desenmascararlo primero?"
+MSG_ES[svc_running]="en marcha"
+MSG_ES[svc_stopped]="parado"
+MSG_ES[svc_failed]="con error"
+MSG_ES[svc_enabled]="autoarranque sí"
+MSG_ES[svc_disabled]="autoarranque no"
+MSG_ES[svc_masked]="enmascarado"
+MSG_ES[svc_actions_title]="Servicio: %s"
+MSG_ES[svc_start]="Encender ahora"
+MSG_ES[svc_stop]="Apagar ahora"
+MSG_ES[svc_restart]="Reiniciar"
+MSG_ES[svc_enable]="Activar arranque automático"
+MSG_ES[svc_disable]="Desactivar arranque automático"
+MSG_ES[svc_view_status]="Ver estado detallado"
+MSG_ES[svc_done]="Hecho."
+MSG_ES[svc_action_fail]="La acción falló (mira el mensaje de arriba)."
+MSG_ES[svc_xampp_created]="Servicio de autoarranque creado. XAMPP arrancará al inicio cuando lo actives."
+MSG_ES[svc_xampp_create_fail]="No se pudo crear el servicio de autoarranque de xampp."
 
 # Translate a message key into the current language (falls back to EN, then key).
 t() {
@@ -416,12 +564,32 @@ install_packages() {
   fi
 }
 
+# Uninstall a list of packages. Only the ones actually installed are removed
+# (the catalog groups may include packages you never installed). Uses pacman
+# directly: AUR packages are regular packages once installed, so no helper is
+# needed. pacman shows what it will remove and asks for confirmation.
+uninstall_packages() {
+  local -a present=(); local p
+  for p in "$@"; do
+    pacman -Qq -- "$p" >/dev/null 2>&1 && present+=("$p")
+  done
+  if [ "${#present[@]}" -eq 0 ]; then
+    warn "$(t uninstall_none_installed)"; return 1
+  fi
+  printf '\n%s%s%s\n\n' "$C_B" "$(printf "$(t uninstall_with)" "${present[*]}")" "$C_RESET"
+  if ! confirm "$(t confirm_uninstall)"; then
+    warn "$(t uninstall_cancelled)"; return 1
+  fi
+  # -R remove, -n skip .pacsave backups, -s also remove now-unneeded deps.
+  sudo pacman -Rns -- "${present[@]}"
+}
+
 # ==================================================================
 #  Installation list (accumulates apps from several categories)
 # ==================================================================
-# Lets you pick apps in different categories and install them all at once,
-# without forcing you through it: in each category you can «Install now»
-# (direct flow) or «Add to the list».
+# A selection you build across categories and then act on in bulk: install
+# ALL or uninstall ALL. It never forces you through it — in each category you
+# can «Install now», «Uninstall» or «Add to the list» (direct flows vs. queue).
 LIST_NAMES=()   # visible name of each entry
 LIST_PKGS=()    # package(s) of each entry (parallel to LIST_NAMES)
 
@@ -453,6 +621,16 @@ list_install() {
   fi
 }
 
+list_uninstall() {
+  local -a flat=(); local e
+  for e in "${LIST_PKGS[@]}"; do flat+=($e); done   # split the package groups
+  [ "${#flat[@]}" -eq 0 ] && { warn "$(t list_is_empty)"; return 1; }
+  if uninstall_packages "${flat[@]}"; then
+    LIST_NAMES=(); LIST_PKGS=()
+    ok "$(t list_uninstall_done)"
+  fi
+}
+
 list_menu() {
   while true; do
     header "$(t list_title)"
@@ -462,12 +640,14 @@ list_menu() {
     fi
     list_show
     printf '\n  %si)%s %s\n' "$C_B" "$C_RESET" "$(t list_install_all)"
+    printf '  %su)%s %s\n'   "$C_B" "$C_RESET" "$(t list_uninstall_all)"
     printf '  %sq)%s %s\n'   "$C_B" "$C_RESET" "$(t list_remove)"
     printf '  %sv)%s %s\n'   "$C_B" "$C_RESET" "$(t list_clear)"
     printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
     local op; read -rp "$(t choose)" op
     case "$op" in
       i|I) list_install; pause; [ "${#LIST_NAMES[@]}" -eq 0 ] && return ;;
+      u|U) list_uninstall; pause; [ "${#LIST_NAMES[@]}" -eq 0 ] && return ;;
       q|Q)
         local n; read -rp "$(t list_remove_prompt)" n
         if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "${#LIST_NAMES[@]}" ]; then
@@ -496,12 +676,12 @@ list_menu() {
 GAMES_NAMES=(
   "Meta Gaming CachyOS" "Steam" "Lutris" "Heroic Games Launcher" "Bottles"
   "ProtonUp-Qt" "Proton (CachyOS)" "Wine (CachyOS)" "Winetricks" "GameMode"
-  "MangoHud" "GOverlay" "vkBasalt" "Prism Launcher (Minecraft)" "Discord" "OBS Studio"
+  "MangoHud" "GOverlay" "vkBasalt" "Prism Launcher (Minecraft)" "Discord"
 )
 GAMES_PKGS=(
   "cachyos-gaming-meta" "steam" "lutris" "heroic-games-launcher-bin" "bottles"
   "protonup-qt" "proton-cachyos" "wine-cachyos" "winetricks" "gamemode lib32-gamemode"
-  "mangohud lib32-mangohud" "goverlay" "vkbasalt lib32-vkbasalt" "prismlauncher" "discord" "obs-studio"
+  "mangohud lib32-mangohud" "goverlay" "vkbasalt lib32-vkbasalt" "prismlauncher" "discord"
 )
 GAMES_DESC_EN=(
   "CachyOS-optimized gaming stack (recommended)" "Valve's gaming platform"
@@ -510,7 +690,7 @@ GAMES_DESC_EN=(
   "CachyOS-optimized Proton" "CachyOS-optimized Wine" "Installs common Wine dependencies"
   "Optimizes the system while gaming (Feral)" "In-game FPS/temperature overlay"
   "GUI to configure MangoHud" "Post-processing (sharpen, etc.) for Vulkan"
-  "Minecraft launcher" "Voice/text chat for gaming" "Recording and streaming"
+  "Minecraft launcher" "Voice/text chat for gaming"
 )
 GAMES_DESC_ES=(
   "Stack de juego optimizado por CachyOS (recomendado)" "Plataforma de juegos de Valve"
@@ -519,7 +699,7 @@ GAMES_DESC_ES=(
   "Proton optimizado por CachyOS" "Wine optimizado por CachyOS" "Instala dependencias comunes de Wine"
   "Optimiza el sistema durante el juego (Feral)" "Overlay de FPS/temperaturas en juego"
   "Interfaz gráfica para configurar MangoHud" "Post-procesado (sharpen, etc.) para Vulkan"
-  "Lanzador de Minecraft" "Chat de voz/texto para jugar" "Grabación y streaming"
+  "Lanzador de Minecraft" "Chat de voz/texto para jugar"
 )
 
 # ------------------ Development: PACKS by stack -------------------
@@ -573,10 +753,27 @@ TOOLS_DESC_EN=( "Version control" "gh in the terminal" "TUI for Git" "Containers
 TOOLS_DESC_ES=( "Control de versiones" "gh en terminal" "TUI para Git" "Contenedores" "Contenedores sin daemon" "Cliente de Kubernetes" "Infraestructura como código" "Automatización" "Cliente de APIs (AUR)" "Cliente HTTP en terminal" "Procesador de JSON" "Terminal moderna con IA (AUR)" )
 
 # --------------------------- Multimedia ---------------------------
-MEDIA_NAMES=( "VLC" "MPV" "Audacity" "GIMP" "Krita" "Pinta" "Inkscape" "Blender" "Kdenlive" "Shotcut" "HandBrake" "darktable" "Spotify" "FFmpeg" )
-MEDIA_PKGS=( "vlc" "mpv" "audacity" "gimp" "krita" "pinta" "inkscape" "blender" "kdenlive" "shotcut" "handbrake" "darktable" "spotify" "ffmpeg" )
-MEDIA_DESC_EN=( "Media player" "Minimalist player" "Audio editor" "Image editor" "Digital painting" "Simple image editor (Paint.NET-like)" "Vector graphics" "3D modeling and rendering" "Video editor (KDE)" "Simple video editor" "Video converter/compressor" "RAW photo development" "Music streaming (AUR)" "Codecs and command-line utility" )
-MEDIA_DESC_ES=( "Reproductor multimedia" "Reproductor minimalista" "Editor de audio" "Editor de imágenes" "Pintura digital" "Editor de imágenes sencillo (alternativa a Paint.NET)" "Gráficos vectoriales" "Modelado y render 3D" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Conversor/compresor de vídeo" "Revelado RAW de fotos" "Streaming de música (AUR)" "Códecs y utilidad de línea de comandos" )
+# Playback and general media utilities. Editors live in the Editing section.
+MEDIA_NAMES=( "VLC" "MPV" "Spotify" "FFmpeg" )
+MEDIA_PKGS=( "vlc" "mpv" "spotify" "ffmpeg" )
+MEDIA_DESC_EN=( "Media player" "Minimalist player" "Music streaming (AUR)" "Codecs and command-line utility" )
+MEDIA_DESC_ES=( "Reproductor multimedia" "Reproductor minimalista" "Streaming de música (AUR)" "Códecs y utilidad de línea de comandos" )
+
+# --------------------------- Streaming ----------------------------
+# Streaming, recording and VTubing. veadotube-mini is not packaged (itch.io
+# only), so the itch client is offered as the way to install it.
+STREAM_NAMES=( "OBS Studio" "itch (veadotube-mini, etc.)" "Inochi Session" "Inochi Creator" "Chatterino" "Streamlink Twitch GUI" "Streamlink" )
+STREAM_PKGS=( "obs-studio" "itch-bin" "inochi-session" "inochi-creator" "chatterino2-bin" "streamlink-twitch-gui-bin" "streamlink" )
+STREAM_DESC_EN=( "Recording and streaming" "itch.io client — install veadotube-mini and other apps (AUR)" "Open-source VTubing, 2D puppets (AUR)" "Create Inochi2D puppets (AUR)" "Twitch chat client (AUR)" "Watch Twitch streams in a desktop GUI (AUR)" "Watch streams from the command line" )
+STREAM_DESC_ES=( "Grabación y streaming" "Cliente de itch.io — instala veadotube-mini y otras apps (AUR)" "VTubing de código abierto, marionetas 2D (AUR)" "Crea marionetas Inochi2D (AUR)" "Cliente de chat de Twitch (AUR)" "Ver streams de Twitch en una GUI de escritorio (AUR)" "Ver streams desde la línea de comandos" )
+
+# ----------------------------- Editing ----------------------------
+# Video, photo and audio editing (free tools). DaVinci Resolve is the pro
+# option; the rest are open-source editors moved here from Multimedia.
+EDIT_NAMES=( "DaVinci Resolve" "Kdenlive" "Shotcut" "OpenShot" "Flowblade" "Olive" "HandBrake" "LosslessCut" "Blender" "GIMP" "Krita" "Inkscape" "Pinta" "darktable" "Audacity" )
+EDIT_PKGS=( "davinci-resolve" "kdenlive" "shotcut" "openshot" "flowblade" "olive" "handbrake" "losslesscut-bin" "blender" "gimp" "krita" "inkscape" "pinta" "darktable" "audacity" )
+EDIT_DESC_EN=( "Pro video editing and color grading (AUR)" "Video editor (KDE)" "Simple video editor" "Simple video editor (AUR)" "Video editor" "Video editor / NLE (AUR)" "Video converter/compressor" "Lossless video cut/trim (AUR)" "3D modeling and rendering" "Image editor" "Digital painting" "Vector graphics" "Simple image editor (Paint.NET-like)" "RAW photo development" "Audio editor" )
+EDIT_DESC_ES=( "Edición de vídeo y etalonaje profesional (AUR)" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Editor de vídeo sencillo (AUR)" "Editor de vídeo" "Editor de vídeo / NLE (AUR)" "Conversor/compresor de vídeo" "Corte/recorte de vídeo sin recodificar (AUR)" "Modelado y render 3D" "Editor de imágenes" "Pintura digital" "Gráficos vectoriales" "Editor de imágenes sencillo (alternativa a Paint.NET)" "Revelado RAW de fotos" "Editor de audio" )
 
 # ----------------------------- Office -----------------------------
 OFFICE_NAMES=( "LibreOffice" "OnlyOffice" "WPS Office" "Obsidian" "Joplin" "Thunderbird" "Okular" "Xournal++" "Calibre" "Logseq" )
@@ -645,12 +842,13 @@ category_menu() {
       warn "$(t nothing_selected)"; pause; continue
     fi
 
-    # Install now, or save to the list to install together with the rest?
+    # Install now, uninstall, or save to the list to act on together later?
     # Clean screen showing only this info.
     clear 2>/dev/null || true
     printf '%s%s%s\n\n' "$C_B" "$(printf "$(t selected)" "${sel_names[*]}")" "$C_RESET"
     printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_install_now)"
     printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_add_list)"
+    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_uninstall)"
     printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t cancel)"
     local acc; read -rp "$(t what_to_do)" acc
     clear 2>/dev/null || true
@@ -665,6 +863,11 @@ category_menu() {
         for j in "${!sel_pkgs[@]}"; do
           list_add "${sel_names[$j]}" "${sel_pkgs[$j]}"
         done ;;   # add: repaint the category menu
+      3)
+        local -a flat=(); local e
+        for e in "${sel_pkgs[@]}"; do flat+=($e); done
+        uninstall_packages "${flat[@]}"
+        pause ;;
       *) : ;;   # cancel: repaint the category menu
     esac
   done
@@ -712,9 +915,11 @@ apps_section() {
     printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cat_development)"
     printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cat_games)"
     printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cat_multimedia)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cat_office)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cat_internet)"
-    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t cat_system)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cat_streaming)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cat_editing)"
+    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t cat_office)"
+    printf '  %s7)%s %s\n' "$C_B" "$C_RESET" "$(t cat_internet)"
+    printf '  %s8)%s %s\n' "$C_B" "$C_RESET" "$(t cat_system)"
     printf '\n  %sL)%s %s\n' "$C_B" "$C_RESET" "$(printf "$(t list_menu)" "${#LIST_NAMES[@]}")"
     printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
 
@@ -723,9 +928,11 @@ apps_section() {
       1) dev_section ;;
       2) category_menu "$(t cat_games)"      GAMES_NAMES  GAMES_PKGS  GAMES_DESC ;;
       3) category_menu "$(t cat_multimedia)" MEDIA_NAMES  MEDIA_PKGS  MEDIA_DESC ;;
-      4) category_menu "$(t cat_office)"     OFFICE_NAMES OFFICE_PKGS OFFICE_DESC ;;
-      5) category_menu "$(t cat_internet)"   NET_NAMES    NET_PKGS    NET_DESC ;;
-      6) category_menu "$(t cat_system)"     SYS_NAMES    SYS_PKGS    SYS_DESC ;;
+      4) category_menu "$(t cat_streaming)"  STREAM_NAMES STREAM_PKGS STREAM_DESC ;;
+      5) category_menu "$(t cat_editing)"    EDIT_NAMES   EDIT_PKGS   EDIT_DESC ;;
+      6) category_menu "$(t cat_office)"     OFFICE_NAMES OFFICE_PKGS OFFICE_DESC ;;
+      7) category_menu "$(t cat_internet)"   NET_NAMES    NET_PKGS    NET_DESC ;;
+      8) category_menu "$(t cat_system)"     SYS_NAMES    SYS_PKGS    SYS_DESC ;;
       l|L) list_menu ;;
       0|"") return ;;
       *) warn "$(t invalid_option)"; pause ;;
@@ -786,12 +993,49 @@ choose_layout() {
   fi
 }
 
+# Num Lock behavior chooser. Prints the mode (on|off|unchanged) on stdout;
+# menu goes to stderr. Empty output = cancel.
+choose_numlock() {
+  { printf '\n'
+    printf '   %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t numlock_opt_on)"
+    printf '   %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t numlock_opt_off)"
+    printf '   %s3)%s %s\n\n' "$C_B" "$C_RESET" "$(t numlock_opt_unchanged)"
+  } >&2
+  local sel; read -rp "$(t numlock_choose_prompt)" sel
+  sel=${sel:-1}
+  case "$sel" in
+    1) printf 'on' ;;
+    2) printf 'off' ;;
+    3) printf 'unchanged' ;;
+    *) : ;;   # anything else = cancel
+  esac
+}
+
+# Fn key behavior chooser. Prints the mode (fkeys|media|auto) on stdout; menu
+# goes to stderr. Empty output = cancel.
+choose_fnkeys() {
+  { printf '\n'
+    printf '   %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t fn_opt_fkeys)"
+    printf '   %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t fn_opt_media)"
+    printf '   %s3)%s %s\n\n' "$C_B" "$C_RESET" "$(t fn_opt_auto)"
+  } >&2
+  local sel; read -rp "$(t fn_choose_prompt)" sel
+  sel=${sel:-1}
+  case "$sel" in
+    1) printf 'fkeys' ;;
+    2) printf 'media' ;;
+    3) printf 'auto' ;;
+    *) : ;;   # anything else = cancel
+  esac
+}
+
 config_section() {
   while true; do
     header "$(t cfg_title)"
     printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_network)"
     printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_keyboard)"
     printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_mirrors)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_browser)"
     printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_apply_all)"
     printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
 
@@ -800,6 +1044,7 @@ config_section() {
       1) fix_network_menu ;;
       2) fix_keyboard_menu ;;
       3) fix_mirrors_menu ;;
+      4) config_browser_menu ;;
       a|A)
         if has_cachyos_fix; then
           confirm "$(t cfg_apply_all_confirm)" && run_fix all
@@ -828,6 +1073,7 @@ fix_keyboard_menu() {
   header "$(t kbd_title)"
   printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_layout)"
   printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_numlock)"
+  printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_fnkeys)"
   printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
   local op; read -rp "$(t choose)" op
   case "$op" in
@@ -835,7 +1081,14 @@ fix_keyboard_menu() {
       local lay; lay=$(choose_layout)
       if [ -z "$lay" ]; then warn "$(t kbd_no_layout)"; pause; return; fi
       apply_fix keyboard "$(printf "$(t desc_keyboard)" "$lay")" "$lay" ;;
-    2) apply_fix numlock "$(t desc_numlock)" ;;
+    2)
+      local mode; mode=$(choose_numlock)
+      if [ -z "$mode" ]; then warn "$(t numlock_no_choice)"; pause; return; fi
+      apply_fix numlock "$(t "desc_numlock_$mode")" "$mode" ;;
+    3)
+      local mode; mode=$(choose_fnkeys)
+      if [ -z "$mode" ]; then warn "$(t fn_no_choice)"; pause; return; fi
+      apply_fix fnkeys "$(t "desc_fn_$mode")" "$mode" ;;
     *) : ;;
   esac
 }
@@ -851,6 +1104,96 @@ fix_mirrors_menu() {
   esac
 }
 
+# Detect installed web browsers dynamically: any .desktop entry that registers
+# the http(s) URL scheme is a candidate. Prints "desktop-id<TAB>Name" per browser.
+detect_browsers() {
+  local -a dirs=(
+    /usr/share/applications
+    "$HOME/.local/share/applications"
+    /var/lib/flatpak/exports/share/applications
+    "$HOME/.local/share/flatpak/exports/share/applications"
+  )
+  local -A seen=()
+  local d f id name
+  for d in "${dirs[@]}"; do
+    [ -d "$d" ] || continue
+    for f in "$d"/*.desktop; do
+      [ -f "$f" ] || continue
+      grep -qiE '^MimeType=.*x-scheme-handler/http' "$f" || continue
+      grep -qiE '^(Hidden|NoDisplay)=true' "$f" && continue
+      id=$(basename "$f")
+      [ -n "${seen[$id]:-}" ] && continue
+      seen[$id]=1
+      name=$(awk -F= '/^Name=/{print $2; exit}' "$f")
+      printf '%s\t%s\n' "$id" "${name:-$id}"
+    done
+  done
+}
+
+# Map a browser desktop-id to its friendly Name (falls back to the id).
+browser_name() { # $1 = desktop id
+  local line
+  line=$(detect_browsers | awk -F'\t' -v id="$1" '$1==id{print $2; exit}')
+  printf '%s' "${line:-$1}"
+}
+
+config_browser_menu() {
+  # xdg-settings (xdg-utils) is the portable way to set the default browser.
+  if ! command -v xdg-settings >/dev/null 2>&1; then
+    header "$(t browser_title)"
+    warn "$(t browser_no_xdg)"
+    if confirm "$(t browser_install_xdg)"; then
+      sudo pacman -S --needed --noconfirm xdg-utils || { err "$(t browser_xdg_fail)"; pause; return; }
+    else
+      pause; return
+    fi
+  fi
+
+  local -a ids=() names=()
+  local id name
+  while IFS=$'\t' read -r id name; do
+    [ -n "$id" ] || continue
+    ids+=("$id"); names+=("$name")
+  done < <(detect_browsers | sort -t$'\t' -k2 -f)
+
+  while true; do
+    header "$(t browser_title)"
+    local cur; cur=$(xdg-settings get default-web-browser 2>/dev/null)
+    if [ -n "$cur" ]; then
+      printf '%s%s%s\n\n' "$C_DIM" "$(printf "$(t browser_current)" "$(browser_name "$cur")")" "$C_RESET"
+    else
+      printf '%s%s%s\n\n' "$C_DIM" "$(t browser_current_none)" "$C_RESET"
+    fi
+
+    if [ "${#ids[@]}" -eq 0 ]; then
+      warn "$(t browser_none_found)"; pause; return
+    fi
+    local i
+    for i in "${!ids[@]}"; do
+      printf '  %s%2d)%s %-24s %s%s%s\n' \
+        "$C_B" "$((i+1))" "$C_RESET" "${names[$i]}" "$C_DIM" "${ids[$i]}" "$C_RESET"
+    done
+    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+
+    local op; read -rp "$(t browser_choose)" op
+    case "$op" in
+      0|"") return ;;
+      *)
+        if [[ "$op" =~ ^[0-9]+$ ]] && [ "$op" -ge 1 ] && [ "$op" -le "${#ids[@]}" ]; then
+          local sel="${ids[$((op-1))]}"
+          if xdg-settings set default-web-browser "$sel" 2>/dev/null; then
+            ok "$(printf "$(t browser_set_ok)" "${names[$((op-1))]}")"
+          else
+            err "$(t browser_set_fail)"
+          fi
+          pause
+        else
+          warn "$(t invalid_option)"; pause
+        fi ;;
+    esac
+  done
+}
+
 # ==================================================================
 #  SECTION: STATUS
 # ==================================================================
@@ -863,6 +1206,445 @@ status_section() {
     printf '   WiFi power_save : %s\n' "$(iw dev wlan0 get power_save 2>/dev/null | awk -F': ' '/Power save/{print $2}')"
   fi
   pause
+}
+
+# ==================================================================
+#  SECTION: SERVICES (systemd service manager)
+# ==================================================================
+# Generic manager: turn services on/off and set autostart at boot. The list is
+# built DYNAMICALLY from systemd (no hardcoded services), with filters so it
+# stays usable: apps / running / autostart / failed / all / system.
+#
+# It spans two managers: the SYSTEM systemd (actions need sudo) and the USER
+# session (systemctl --user, no sudo). The 'apps' filter (default) lists the
+# applications launched this session — Discord, Steam, Brave… — which run as
+# 'app-*' USER units and are therefore invisible to the system manager. Each
+# entry remembers its scope so actions dispatch to the right manager.
+#
+# Two failure modes we hit with XAMPP and guard against for EVERY service:
+#
+#   1) The status lied. 'systemctl is-active' only reflects reality for services
+#      controlled THROUGH systemd. Apps with their own control script/GUI (XAMPP:
+#      /opt/lampp) can run outside systemd, so is-active shows "stopped" while
+#      they are clearly up. Such apps must NOT go through the generic path:
+#      handle them specially (real state by process, on/off via their own tool).
+#      See the XAMPP block below as the template for any future dual-control app.
+#
+#   2) Enable/disable failed cryptically. A 'static' unit (no [Install]) cannot
+#      be enabled; a 'masked' one cannot start/enable. The generic actions
+#      (svc_start_generic / svc_enable_generic / svc_disable_generic) detect
+#      these and explain (offering to unmask) instead of erroring out.
+XAMPP_CTL="/opt/lampp/lampp"
+
+# A filter targets either the SYSTEM systemd (sudo) or the USER session
+# (systemctl --user, no sudo). The 'apps' filter shows the applications you
+# launched this session (Discord, Steam, Brave…), which run as 'app-*' user
+# units — they are not system services, which is why they never showed before.
+svc_filter_scope() { # $1 = filter → 'user' or 'system'
+  case "$1" in apps|user) printf 'user' ;; *) printf 'system' ;; esac
+}
+
+# True if the unit is known to the given manager.
+svc_known() { # $1 = scope ; $2 = unit
+  if [ "$1" = user ]; then systemctl --user cat -- "$2" >/dev/null 2>&1
+  else                     systemctl        cat -- "$2" >/dev/null 2>&1; fi
+}
+
+# --- Dynamic enumeration from systemd (no hardcoded service list) ---
+# List unit names for a filter, one per line, sorted alphabetically
+# (case-insensitive, so e.g. NetworkManager sorts with the lowercase names).
+# 'all' and 'system' enumerate every installed service; the system/user split
+# is applied later by svc_is_system when the list is built.
+svc_list_units() { # $1 = apps | running | enabled | failed | all | system
+  case "$1" in
+    apps)       systemctl --user list-units --state=running --no-legend --plain 2>/dev/null | awk '{print $1}' | grep -E '^app-' | sort -f ;;
+    running)    systemctl list-units --type=service --state=running --no-legend --plain 2>/dev/null | awk '{print $1}' | sort -f ;;
+    failed)     systemctl list-units --type=service --state=failed  --no-legend --plain 2>/dev/null | awk '{print $1}' | sort -f ;;
+    enabled)    systemctl list-unit-files --type=service --state=enabled --no-legend 2>/dev/null | awk '{print $1}' | sort -f ;;
+    all|system) systemctl list-unit-files --type=service --no-legend 2>/dev/null | awk '{print $1}' | sort -uf ;;
+  esac
+}
+
+# Heuristic: is this a system/OS-plumbing service? These are hidden from the
+# normal filters and shown only under the 'system' filter. It covers systemd's
+# own units, template/instance units (name has '@'), and well-known low-level
+# daemons. Not perfect (there is no reliable "shipped with the OS" flag), so it
+# is deliberately easy to tune by editing the patterns below.
+svc_is_system() { # $1 = unit (with or without .service)
+  local u="${1%.service}"
+  case "$u" in
+    systemd-*|systemd)              return 0 ;;
+    *@*)                            return 0 ;;   # template/instance units
+    dbus|dbus-broker|dbus-org.*)    return 0 ;;
+    polkit|rtkit-daemon|accounts-daemon)                 return 0 ;;
+    udisks2|upower|power-profiles-daemon|switcheroo-control|colord|geoclue) return 0 ;;
+    ModemManager|wpa_supplicant|iwd|avahi-daemon)        return 0 ;;
+    NetworkManager-wait-online|NetworkManager-dispatcher) return 0 ;;
+    plasmalogin|sddm|gdm|lightdm|greetd|ly)              return 0 ;;
+    ananicy-cpp|dmemcg-*|thermald|irqbalance|haveged|rngd|smartd) return 0 ;;
+    plymouth-*|dracut-*|initrd-*|emergency|rescue|kmod-static-nodes|ldconfig) return 0 ;;
+    fstrim|logrotate|man-db|updatedb|shadow)             return 0 ;;
+    reflector|archlinux-keyring-wkd-sync|cachyos-*)      return 0 ;;
+    *)                              return 1 ;;
+  esac
+}
+
+# Cycle to the next filter (apps first, so launched apps show by default).
+svc_next_filter() { # $1 = current filter
+  case "$1" in
+    apps)    printf 'running' ;;
+    running) printf 'enabled' ;;
+    enabled) printf 'failed' ;;
+    failed)  printf 'all' ;;
+    all)     printf 'system' ;;
+    *)       printf 'apps' ;;
+  esac
+}
+
+# Localized name of a filter.
+svc_filter_name() { # $1 = filter
+  case "$1" in
+    apps)    t svc_filter_apps ;;
+    running) t svc_filter_running ;;
+    enabled) t svc_filter_enabled ;;
+    failed)  t svc_filter_failed ;;
+    all)     t svc_filter_all ;;
+    system)  t svc_filter_system ;;
+  esac
+}
+
+# Bulk-load every unit's active/enabled state (and description) for a manager in
+# two calls, so painting a long list needs no per-unit systemctl queries.
+declare -A SVC_ACTIVE SVC_ENABLED SVC_DESC
+svc_load_states() { # $1 = scope (system|user)
+  SVC_ACTIVE=(); SVC_ENABLED=(); SVC_DESC=()
+  local -a ctl=(systemctl); [ "$1" = user ] && ctl=(systemctl --user)
+  local unit load active sub desc state preset
+  while read -r unit load active sub desc; do
+    [ -n "$unit" ] || continue
+    SVC_ACTIVE["$unit"]="$active"; SVC_DESC["$unit"]="$desc"
+  done < <("${ctl[@]}" list-units --all --no-legend --plain 2>/dev/null)
+  while read -r unit state preset; do
+    [ -n "$unit" ] && SVC_ENABLED["$unit"]="$state"
+  done < <("${ctl[@]}" list-unit-files --no-legend 2>/dev/null)
+}
+
+xampp_present() { [ -x "$XAMPP_CTL" ]; }
+
+# XAMPP is special: it can be started by its own script or GUI, outside systemd,
+# so systemd's view is unreliable. Read the real running state from the daemons.
+xampp_running() {
+  pgrep -f '/opt/lampp/bin/httpd'   >/dev/null 2>&1 && return 0
+  pgrep -f '/opt/lampp/sbin/mysqld' >/dev/null 2>&1 && return 0
+  return 1
+}
+
+# Whether the active xampp unit can be enabled for boot (has an [Install]
+# section). The unit XAMPP ships is 'static' (no [Install]), so it cannot.
+xampp_can_autostart() {
+  case "$(systemctl is-enabled xampp 2>/dev/null)" in
+    enabled|disabled) return 0 ;;
+    *)                return 1 ;;
+  esac
+}
+
+# Colored "running · autostart" badges for XAMPP (real state, not systemd's).
+xampp_badges() {
+  local r_txt e_txt
+  if xampp_running; then r_txt="${C_GREEN}$(t svc_running)${C_RESET}"
+  else                   r_txt="${C_DIM}$(t svc_stopped)${C_RESET}"; fi
+  if [ "$(systemctl is-enabled xampp 2>/dev/null)" = enabled ]; then
+    e_txt="${C_GREEN}$(t svc_enabled)${C_RESET}"
+  else
+    e_txt="${C_DIM}$(t svc_disabled)${C_RESET}"   # disabled/static → won't autostart
+  fi
+  printf '%s · %s' "$r_txt" "$e_txt"
+}
+
+# Render colored "state · autostart" badges from raw states.
+_svc_render_badges() { # $1 = active-state ; $2 = enabled-state
+  local act="$1" ena="$2" a_txt e_txt
+  case "$act" in
+    active)                  a_txt="${C_GREEN}$(t svc_running)${C_RESET}" ;;
+    failed)                  a_txt="${C_RED}$(t svc_failed)${C_RESET}" ;;
+    activating|deactivating) a_txt="${C_YELLOW}${act}${C_RESET}" ;;
+    *)                       a_txt="${C_DIM}$(t svc_stopped)${C_RESET}" ;;
+  esac
+  case "$ena" in
+    enabled|enabled-runtime)   e_txt="${C_GREEN}$(t svc_enabled)${C_RESET}" ;;
+    disabled)                  e_txt="${C_DIM}$(t svc_disabled)${C_RESET}" ;;
+    masked)                    e_txt="${C_RED}$(t svc_masked)${C_RESET}" ;;
+    static|indirect|generated) e_txt="${C_DIM}${ena}${C_RESET}" ;;
+    *)                         e_txt="${C_DIM}—${C_RESET}" ;;
+  esac
+  printf '%s · %s' "$a_txt" "$e_txt"
+}
+
+# Live badges for a single unit (used in the action menu, always fresh).
+svc_badges() { # $1 = scope ; $2 = unit
+  local -a ctl=(systemctl); [ "$1" = user ] && ctl=(systemctl --user)
+  _svc_render_badges \
+    "$("${ctl[@]}" is-active  -- "$2" 2>/dev/null)" \
+    "$("${ctl[@]}" is-enabled -- "$2" 2>/dev/null)"
+}
+
+# Cached badges from the bulk maps (used to paint the list without per-unit calls).
+svc_badges_row() { _svc_render_badges "${SVC_ACTIVE[$1]:-inactive}" "${SVC_ENABLED[$1]:-}"; }
+
+# Friendly label for a user/app unit. Prefer systemd's Description; if it is
+# missing (some app scopes have none, so systemd echoes the unit id), derive a
+# readable name from the unit id: app-org.kde.konsole-2123.scope -> konsole.
+svc_app_label() { # $1 = unit ; $2 = raw description
+  local u="$1" d="$2"
+  if [ -n "$d" ] && [ "$d" != "$u" ]; then printf '%s' "$d"; return; fi
+  local n="${u%.scope}"; n="${n%.service}"; n="${n#app-}"
+  n="${n%@*}"        # drop @<hash>
+  n="${n%-[0-9]*}"   # drop trailing -<pid>
+  n="${n##*.}"       # last segment of a reverse-DNS id (org.kde.konsole -> konsole)
+  printf '%s' "$n"
+}
+
+# Create a systemd unit that wraps the XAMPP control script, so XAMPP can be
+# managed like any other service (start/stop/enable). Type=oneshot with
+# RemainAfterExit fits a script that starts several daemons and then exits.
+xampp_setup_unit() {
+  local unit="/etc/systemd/system/xampp.service"
+  local content="[Unit]
+Description=XAMPP (Apache + MariaDB + PHP)
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=$XAMPP_CTL start
+ExecStop=$XAMPP_CTL stop
+
+[Install]
+WantedBy=multi-user.target"
+  if printf '%s\n' "$content" | sudo tee "$unit" >/dev/null; then
+    sudo systemctl daemon-reload
+    ok "$(t svc_xampp_created)"
+    return 0
+  fi
+  err "$(t svc_xampp_create_fail)"
+  return 1
+}
+
+# Raw is-enabled of a unit in its manager.
+svc_isenabled() { # $1 = scope ; $2 = unit
+  if [ "$1" = user ]; then systemctl --user is-enabled -- "$2" 2>/dev/null
+  else                     systemctl        is-enabled -- "$2" 2>/dev/null; fi
+}
+
+# Run a systemctl action and report the result. System actions use sudo; user
+# actions (apps/user session) do not.
+svc_run() { # $1 = scope ; $2 = unit ; $3 = action
+  local rc=0
+  if [ "$1" = user ]; then systemctl --user "$3" -- "$2" || rc=1
+  else                     sudo systemctl    "$3" -- "$2" || rc=1; fi
+  [ "$rc" -eq 0 ] && ok "$(t svc_done)" || err "$(t svc_action_fail)"
+  pause
+}
+
+# --- Safety net: never fail cryptically on masked/static/transient units ---
+# A masked unit cannot start/enable; a static one (no [Install]) or a transient
+# one (an app scope) cannot be enabled/disabled. Detect these and explain.
+
+# Offer to unmask a masked unit, then run the action; returns 1 if declined.
+svc_unmask_then() { # $1 = scope ; $2 = unit ; $3 = action
+  warn "$(t svc_is_masked)"
+  if confirm "$(t svc_unmask_ask)"; then
+    if [ "$1" = user ]; then systemctl --user unmask -- "$2"; else sudo systemctl unmask -- "$2"; fi \
+      && svc_run "$1" "$2" "$3"
+  else
+    pause; return 1
+  fi
+}
+
+svc_start_generic() { # $1 = scope ; $2 = unit
+  if [ "$(svc_isenabled "$1" "$2")" = masked ]; then
+    svc_unmask_then "$1" "$2" start; return
+  fi
+  svc_run "$1" "$2" start
+}
+
+svc_enable_generic() { # $1 = scope ; $2 = unit
+  case "$(svc_isenabled "$1" "$2")" in
+    masked)                                    svc_unmask_then "$1" "$2" enable ;;
+    static|indirect|generated|alias|transient) warn "$(t svc_static_info)"; pause ;;
+    *)                                         svc_run "$1" "$2" enable ;;
+  esac
+}
+
+svc_disable_generic() { # $1 = scope ; $2 = unit
+  case "$(svc_isenabled "$1" "$2")" in
+    masked)                                    warn "$(t svc_is_masked)"; pause ;;
+    static|indirect|generated|alias|transient) warn "$(t svc_static_info)"; pause ;;
+    *)                                         svc_run "$1" "$2" disable ;;
+  esac
+}
+
+# Action menu for a single unit (system service or user/app unit).
+service_actions() { # $1 = scope ; $2 = unit ; $3 = label
+  local scope="$1" unit="$2" label="$3"
+  while true; do
+    header "$(t svc_title)"
+    printf '%s%s%s\n' "$C_B" "$(printf "$(t svc_actions_title)" "$label")" "$C_RESET"
+    printf '   %s\n\n' "$(svc_badges "$scope" "$unit")"
+    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t svc_start)"
+    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t svc_stop)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t svc_restart)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t svc_enable)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t svc_disable)"
+    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t svc_view_status)"
+    printf '\n  %sr)%s %s\n' "$C_B" "$C_RESET" "$(t svc_refresh)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t choose)" op
+    case "$op" in
+      1) svc_start_generic "$scope" "$unit" ;;
+      2) svc_run "$scope" "$unit" stop ;;
+      3) svc_run "$scope" "$unit" restart ;;
+      4) svc_enable_generic "$scope" "$unit" ;;
+      5) svc_disable_generic "$scope" "$unit" ;;
+      6) if [ "$scope" = user ]; then systemctl --user status --no-pager -- "$unit"
+         else                         systemctl        status --no-pager -- "$unit"; fi
+         pause ;;
+      r|R) continue ;;   # re-loop: re-reads the badge
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+# Run a XAMPP control action through its own script (start/stop/restart/status).
+svc_run_xampp() { # $1 = lampp action
+  if sudo "$XAMPP_CTL" "$1"; then
+    ok "$(t svc_done)"
+  else
+    err "$(t svc_action_fail)"
+  fi
+  pause
+}
+
+# Turn XAMPP autostart on. The shipped unit is 'static' (no [Install]); create
+# our own unit (with [Install]) if needed so 'systemctl enable' works.
+xampp_enable() {
+  if ! xampp_can_autostart; then
+    xampp_setup_unit || { pause; return; }
+  fi
+  svc_run system xampp enable
+}
+
+# Action menu for XAMPP: on/off/restart via its script, autostart via systemd.
+xampp_actions() { # $1 = label
+  local label="$1"
+  while true; do
+    header "$(t svc_title)"
+    printf '%s%s%s\n' "$C_B" "$(printf "$(t svc_actions_title)" "$label")" "$C_RESET"
+    printf '   %s\n\n' "$(xampp_badges)"
+    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t svc_start)"
+    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t svc_stop)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t svc_restart)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t svc_enable)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t svc_disable)"
+    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t svc_view_status)"
+    printf '\n  %sr)%s %s\n' "$C_B" "$C_RESET" "$(t svc_refresh)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t choose)" op
+    case "$op" in
+      1) svc_run_xampp start ;;
+      2) svc_run_xampp stop ;;
+      3) svc_run_xampp restart ;;
+      4) xampp_enable ;;
+      5) if xampp_can_autostart; then svc_run system xampp disable
+         else warn "$(t svc_autostart_na)"; pause; fi ;;
+      6) sudo "$XAMPP_CTL" status; pause ;;
+      r|R) continue ;;   # re-loop: re-reads the badge
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
+services_section() {
+  local filter="apps"   # default: show the apps launched this session
+  while true; do
+    header "$(t svc_title)"
+    printf '%s%s%s\n\n' "$C_DIM" \
+      "$(printf "$(t svc_filter_label)" "$(svc_filter_name "$filter")")" "$C_RESET"
+
+    local scope; scope="$(svc_filter_scope "$filter")"
+    svc_load_states "$scope"   # one bulk read of this manager's states, for fast painting
+
+    # Build the visible list dynamically. For system-scope filters, XAMPP goes
+    # first (special dual-control entry) and OS/plumbing services are hidden
+    # unless the filter is 'system'. For the 'apps'/user scope, entries are
+    # shown with their friendly description (Discord, Brave…).
+    local -a units=() labels=()
+    if [ "$scope" = system ] && [ "$filter" != system ] && xampp_present; then
+      units+=("xampp"); labels+=("XAMPP (Apache + MariaDB + PHP)")
+    fi
+    local u
+    while IFS= read -r u; do
+      [ -n "$u" ] || continue
+      if [ "$scope" = system ]; then
+        [ "$u" = "xampp.service" ] && continue   # shown as the special entry above
+        if [ "$filter" = system ]; then
+          svc_is_system "$u" || continue         # system filter: only system units
+        else
+          svc_is_system "$u" && continue         # other filters: hide system units
+        fi
+        units+=("$u"); labels+=("${u%.service}")
+      else
+        units+=("$u"); labels+=("$(svc_app_label "$u" "${SVC_DESC[$u]:-}")")
+      fi
+    done < <(svc_list_units "$filter")
+
+    if [ "${#units[@]}" -eq 0 ]; then
+      warn "$(t svc_none_in_filter)"
+    else
+      local i badge
+      for i in "${!units[@]}"; do
+        if [ "${units[$i]}" = xampp ]; then
+          badge="$(xampp_badges)"
+        else
+          badge="$(svc_badges_row "${units[$i]}")"
+        fi
+        printf '  %s%3d)%s %-34s %s\n' "$C_B" "$((i+1))" "$C_RESET" "${labels[$i]}" "$badge"
+      done
+    fi
+
+    printf '\n  %sf)%s %s\n' "$C_B" "$C_RESET" "$(t svc_change_filter)"
+    printf '  %sr)%s %s\n'   "$C_B" "$C_RESET" "$(t svc_refresh)"
+    printf '  %sn)%s %s\n'   "$C_B" "$C_RESET" "$(t svc_other_unit)"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+
+    local op; read -rp "$(t svc_choose)" op
+    case "$op" in
+      0|"") return ;;
+      f|F) filter="$(svc_next_filter "$filter")" ;;
+      r|R) : ;;   # re-loop: reloads states and repaints
+      n|N)
+        local un; read -rp "$(t svc_unit_prompt)" un
+        [ -z "$un" ] && continue
+        if svc_known "$scope" "$un"; then
+          service_actions "$scope" "$un" "${un%.service}"
+        else
+          warn "$(t svc_not_available)"; pause
+        fi ;;
+      *)
+        if [[ "$op" =~ ^[0-9]+$ ]] && [ "$op" -ge 1 ] && [ "$op" -le "${#units[@]}" ]; then
+          local sel_unit="${units[$((op-1))]}" sel_label="${labels[$((op-1))]}"
+          if [ "$sel_unit" = xampp ]; then
+            xampp_actions "$sel_label"
+          else
+            service_actions "$scope" "$sel_unit" "$sel_label"
+          fi
+        else
+          warn "$(t invalid_option)"; pause
+        fi ;;
+    esac
+  done
 }
 
 # ==================================================================
@@ -895,16 +1677,18 @@ main_menu() {
     header "$(printf "$(t main_pkgmgr)" "$(detect_helper)")"
     printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t main_install)"
     printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t main_config)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t main_status)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
+    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t main_services)"
+    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t main_status)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
     printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t exit)"
 
     local op; read -rp "$(t main_choose)" op
     case "$op" in
       1) apps_section ;;
       2) config_section ;;
-      3) status_section ;;
-      4) choose_language ;;
+      3) services_section ;;
+      4) status_section ;;
+      5) choose_language ;;
       0|q|Q) header "$(t goodbye)"; exit 0 ;;
       *) warn "$(t invalid_option)"; pause ;;
     esac
