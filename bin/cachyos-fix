@@ -10,6 +10,10 @@
 #   cachyos-fix fnkeys [fkeys|media|auto]   # Fn / F1–F12 behavior (hid_apple)
 #   cachyos-fix wifi       # only the WiFi fix (detects the driver)
 #   cachyos-fix mirrors    # refresh the mirror list and re-sync pacman
+#   cachyos-fix preupdate  # pre-update safety check (/boot mounted, stale lock)
+#   cachyos-fix update     # safe update: pre-update check, then pacman -Syu
+#   cachyos-fix repair-boot# fix orphan kernel modules + depmod + DKMS + initramfs
+#   cachyos-fix clean-kernels # view/remove obsolete (orphan) kernel modules
 #   cachyos-fix estado     # show the current status, without changing anything
 #
 # Idempotent: safe to re-run. It does not reload the WiFi driver if the fix is
@@ -104,6 +108,46 @@ MSG_EN[mir_updated]="Mirror list updated"
 MSG_EN[mir_resync]="Re-syncing pacman databases (pacman -Syy)…"
 MSG_EN[mir_resynced]="Databases re-synced"
 MSG_EN[mir_hint]="Now you can update with: sudo pacman -Su"
+MSG_EN[pu_title]="Pre-update safety check"
+MSG_EN[pu_boot_mounted]="/boot is mounted"
+MSG_EN[pu_boot_on_root]="/boot is on the root filesystem (no separate partition) — OK"
+MSG_EN[pu_boot_unmounted]="/boot is declared in fstab but NOT mounted (dangerous for updates)"
+MSG_EN[pu_boot_mounting]="Trying to mount /boot…"
+MSG_EN[pu_boot_mounted_ok]="/boot mounted"
+MSG_EN[pu_boot_mount_fail]="Could not mount /boot. Fix it before updating (kernel/module mismatch risk)."
+MSG_EN[pu_lock_none]="No pacman lock (db.lck) present"
+MSG_EN[pu_lock_busy]="A pacman process is running; the lock is legitimate — wait for it to finish (do NOT remove it)."
+MSG_EN[pu_lock_stale]="Stale pacman lock found (db.lck) and no pacman is running."
+MSG_EN[pu_lock_ask]="   Remove the stale lock now? [Y/n]: "
+MSG_EN[pu_lock_removed]="Stale lock removed"
+MSG_EN[pu_lock_kept]="Lock kept."
+MSG_EN[pu_abort]="Pre-update check FAILED — not safe to update."
+MSG_EN[pu_safe]="System is safe to update."
+MSG_EN[pu_update_ask]="   Run the system update now (pacman -Syu)? [Y/n]: "
+MSG_EN[pu_updating]="Updating the system (pacman -Syu)…"
+MSG_EN[pu_update_skipped]="Update skipped: the pre-update check did not pass."
+MSG_EN[pu_update_cancelled]="Update cancelled."
+MSG_EN[rb_title]="Repair boot: kernel modules, DKMS and initramfs"
+MSG_EN[rb_need_boot]="/boot must be mounted to regenerate initramfs safely — aborting."
+MSG_EN[rb_running_protected]="Running kernel (%s) is protected — it is never removed."
+MSG_EN[rb_orphans_found]="Orphan kernel-module folders found (no package owns them):"
+MSG_EN[rb_orphans_ask]="   Remove these orphan folders? [Y/n]: "
+MSG_EN[rb_orphans_kept]="Orphan folders kept (nothing removed)."
+MSG_EN[rb_orphan_removed]="Removed /usr/lib/modules/%s"
+MSG_EN[rb_no_orphans]="No orphan kernel-module folders"
+MSG_EN[rb_depmod]="Recalculating module dependencies (depmod)…"
+MSG_EN[rb_depmod_ok]="depmod done"
+MSG_EN[rb_dkms]="Rebuilding DKMS modules (dkms autoinstall)…"
+MSG_EN[rb_dkms_ok]="DKMS modules rebuilt"
+MSG_EN[rb_dkms_fail]="Some DKMS modules failed to build (see the output above)."
+MSG_EN[rb_dkms_none]="DKMS is not installed; skipping that step."
+MSG_EN[rb_initramfs]="Regenerating initramfs (mkinitcpio -P)…"
+MSG_EN[rb_initramfs_ok]="initramfs regenerated"
+MSG_EN[rb_initramfs_fail]="mkinitcpio failed (see the output above)."
+MSG_EN[rb_done]="Boot repair finished."
+MSG_EN[ck_title]="Obsolete kernels (view / remove)"
+MSG_EN[ck_delete_all_ask]="   Remove ALL the obsolete kernels listed above? [y/N]: "
+MSG_EN[ck_done]="Obsolete kernels removed."
 MSG_EN[st_title]="Current status"
 MSG_EN[st_kbd_sys]="   Keyboard (system) : X11 Layout = %s  (expected: es)\n"
 MSG_EN[st_kbd_xwl]="   Keyboard (Xwayland): layout = %s  (expected: es)\n"
@@ -118,8 +162,12 @@ MSG_EN[st_wifi_ps]="   WiFi power_save   : %s\n"
 MSG_EN[st_aspm]="   disable_aspm      : %s  (expected: Y)\n"
 MSG_EN[st_lps]="   disable_lps_deep  : %s  (expected: Y)\n"
 MSG_EN[st_wifi_none]="   WiFi              : not detected\n"
+MSG_EN[st_boot_mounted]="   /boot             : mounted  ✔\n"
+MSG_EN[st_boot_unmounted]="   /boot             : NOT mounted (fstab expects it!)\n"
+MSG_EN[st_boot_onroot]="   /boot             : on root (no separate partition)\n"
+MSG_EN[st_orphans]="   Orphan kmod dirs  : %s\n"
 MSG_EN[unknown_opt]="Unknown option: %s"
-MSG_EN[usage]="Use: cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|status]"
+MSG_EN[usage]="Use: cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|preupdate|update|repair-boot|clean-kernels|status]"
 
 MSG_ES[err_root_1]="No lo ejecutes como root ni con 'sudo cachyos-fix'."
 MSG_ES[err_root_2]="Ejecútalo como usuario normal: 'cachyos-fix' (pedirá sudo cuando lo necesite)."
@@ -187,6 +235,46 @@ MSG_ES[mir_updated]="Lista de mirrors actualizada"
 MSG_ES[mir_resync]="Re-sincronizando las bases de datos de pacman (pacman -Syy)…"
 MSG_ES[mir_resynced]="Bases de datos re-sincronizadas"
 MSG_ES[mir_hint]="Ahora puedes actualizar con: sudo pacman -Su"
+MSG_ES[pu_title]="Chequeo de seguridad previo a actualizar"
+MSG_ES[pu_boot_mounted]="/boot está montado"
+MSG_ES[pu_boot_on_root]="/boot está en la raíz (sin partición aparte) — correcto"
+MSG_ES[pu_boot_unmounted]="/boot está declarado en fstab pero NO montado (peligroso para actualizar)"
+MSG_ES[pu_boot_mounting]="Intentando montar /boot…"
+MSG_ES[pu_boot_mounted_ok]="/boot montado"
+MSG_ES[pu_boot_mount_fail]="No se pudo montar /boot. Arréglalo antes de actualizar (riesgo de desfase kernel/módulos)."
+MSG_ES[pu_lock_none]="No hay bloqueo de pacman (db.lck)"
+MSG_ES[pu_lock_busy]="Hay un pacman en ejecución; el bloqueo es legítimo — espera a que termine (NO lo quites)."
+MSG_ES[pu_lock_stale]="Bloqueo de pacman obsoleto (db.lck) y ningún pacman en ejecución."
+MSG_ES[pu_lock_ask]="   ¿Quitar el bloqueo obsoleto ahora? [S/n]: "
+MSG_ES[pu_lock_removed]="Bloqueo obsoleto eliminado"
+MSG_ES[pu_lock_kept]="Bloqueo conservado."
+MSG_ES[pu_abort]="El chequeo previo FALLÓ — no es seguro actualizar."
+MSG_ES[pu_safe]="El sistema es seguro para actualizar."
+MSG_ES[pu_update_ask]="   ¿Actualizar el sistema ahora (pacman -Syu)? [S/n]: "
+MSG_ES[pu_updating]="Actualizando el sistema (pacman -Syu)…"
+MSG_ES[pu_update_skipped]="Actualización omitida: el chequeo previo no pasó."
+MSG_ES[pu_update_cancelled]="Actualización cancelada."
+MSG_ES[rb_title]="Reparar arranque: módulos del kernel, DKMS e initramfs"
+MSG_ES[rb_need_boot]="/boot debe estar montado para regenerar initramfs con seguridad — abortando."
+MSG_ES[rb_running_protected]="El kernel en uso (%s) está protegido — nunca se elimina."
+MSG_ES[rb_orphans_found]="Carpetas de módulos huérfanas (ningún paquete es su dueño):"
+MSG_ES[rb_orphans_ask]="   ¿Eliminar estas carpetas huérfanas? [S/n]: "
+MSG_ES[rb_orphans_kept]="Carpetas huérfanas conservadas (no se eliminó nada)."
+MSG_ES[rb_orphan_removed]="Eliminado /usr/lib/modules/%s"
+MSG_ES[rb_no_orphans]="No hay carpetas de módulos huérfanas"
+MSG_ES[rb_depmod]="Recalculando dependencias de módulos (depmod)…"
+MSG_ES[rb_depmod_ok]="depmod hecho"
+MSG_ES[rb_dkms]="Recompilando módulos DKMS (dkms autoinstall)…"
+MSG_ES[rb_dkms_ok]="Módulos DKMS recompilados"
+MSG_ES[rb_dkms_fail]="Algunos módulos DKMS fallaron al compilar (mira la salida de arriba)."
+MSG_ES[rb_dkms_none]="DKMS no está instalado; omito ese paso."
+MSG_ES[rb_initramfs]="Regenerando initramfs (mkinitcpio -P)…"
+MSG_ES[rb_initramfs_ok]="initramfs regenerado"
+MSG_ES[rb_initramfs_fail]="mkinitcpio falló (mira la salida de arriba)."
+MSG_ES[rb_done]="Reparación de arranque finalizada."
+MSG_ES[ck_title]="Kernels obsoletos (ver / eliminar)"
+MSG_ES[ck_delete_all_ask]="   ¿Eliminar TODOS los kernels obsoletos de la lista? [s/N]: "
+MSG_ES[ck_done]="Kernels obsoletos eliminados."
 MSG_ES[st_title]="Estado actual"
 MSG_ES[st_kbd_sys]="   Teclado (sistema) : X11 Layout = %s  (esperado: es)\n"
 MSG_ES[st_kbd_xwl]="   Teclado (Xwayland): layout = %s  (esperado: es)\n"
@@ -201,8 +289,12 @@ MSG_ES[st_wifi_ps]="   WiFi power_save   : %s\n"
 MSG_ES[st_aspm]="   disable_aspm      : %s  (esperado: Y)\n"
 MSG_ES[st_lps]="   disable_lps_deep  : %s  (esperado: Y)\n"
 MSG_ES[st_wifi_none]="   WiFi              : no detectado\n"
+MSG_ES[st_boot_mounted]="   /boot             : montado  ✔\n"
+MSG_ES[st_boot_unmounted]="   /boot             : NO montado (¡fstab lo espera!)\n"
+MSG_ES[st_boot_onroot]="   /boot             : en la raíz (sin partición aparte)\n"
+MSG_ES[st_orphans]="   Módulos huérfanos : %s\n"
 MSG_ES[unknown_opt]="Opción desconocida: %s"
-MSG_ES[usage]="Usa: cachyos-fix [all|teclado|numlock|fnkeys|wifi|mirrors|estado]"
+MSG_ES[usage]="Usa: cachyos-fix [all|teclado|numlock|fnkeys|wifi|mirrors|preupdate|update|repair-boot|clean-kernels|estado]"
 
 t() {
   local key="$1"
@@ -511,6 +603,206 @@ fix_mirrors() {
 }
 
 # ==========================================================
+#  Boot / kernel-module helpers (shared by the checks below and status)
+# ==========================================================
+# True if /etc/fstab declares a separate /boot partition (field 2 == /boot).
+boot_in_fstab() { awk '$1!~/^#/ && $2=="/boot"{f=1} END{exit !f}' /etc/fstab 2>/dev/null; }
+
+# Ensure /boot is usable. Prints status. Returns 0 if mounted or on root,
+# 1 if it should be mounted (fstab) but could not be.
+check_boot() {
+  if mountpoint -q /boot; then
+    ok "$(t pu_boot_mounted)"; return 0
+  fi
+  if boot_in_fstab; then
+    warn "$(t pu_boot_unmounted)"
+    log "$(t pu_boot_mounting)"
+    if sudo mount /boot 2>/dev/null && mountpoint -q /boot; then
+      ok "$(t pu_boot_mounted_ok)"; return 0
+    fi
+    err "$(t pu_boot_mount_fail)"; return 1
+  fi
+  ok "$(t pu_boot_on_root)"; return 0   # /boot lives on the root fs — fine
+}
+
+# Print orphan kernel-module versions, one per line: /usr/lib/modules/<ver>
+# dirs left behind by kernels that are no longer installed. NEVER includes the
+# running kernel.
+#
+# Reliability note: we do NOT use `pacman -Qo`, which canonicalizes paths and
+# happily reports a *different* installed version as the owner of a leftover
+# dir (so it would report zero orphans even when one exists — the exact failure
+# this feature is meant to catch). Instead we read each dir's own `pkgbase`
+# marker to learn its package, then confirm that that package actually owns
+# THIS version's pkgbase in its file list (`pacman -Ql`). A leftover version is
+# not in its package's current file list → flagged as orphan.
+orphan_modules() {
+  local moddir=/usr/lib/modules running d ver pkg
+  running=$(uname -r)
+  for d in "$moddir"/*/; do
+    [ -d "$d" ] || continue
+    ver=$(basename "$d")
+    [ "$ver" = "$running" ] && continue
+    pkg=""
+    [ -f "$d/pkgbase" ] && pkg=$(cat "$d/pkgbase" 2>/dev/null)
+    if [ -n "$pkg" ] && pacman -Ql "$pkg" 2>/dev/null \
+         | awk -v p="/usr/lib/modules/$ver/pkgbase" '$2==p{f=1} END{exit !f}'; then
+      continue   # this exact version is owned by its installed package → keep
+    fi
+    printf '%s\n' "$ver"
+  done
+}
+
+# ==========================================================
+#  FIX — Pre-update safety check (/boot mounted, stale pacman lock)
+# ==========================================================
+# The incident this prevents: updating with /boot unmounted (kernel image and
+# on-disk modules drift apart) or with a stale db.lck left by a crashed pacman.
+fix_preupdate() {
+  log "$(t pu_title)"
+  local safe=0
+
+  check_boot || safe=1
+
+  if [ -e /var/lib/pacman/db.lck ]; then
+    if pgrep -x pacman >/dev/null 2>&1; then
+      warn "$(t pu_lock_busy)"; safe=1   # real running transaction — never touch
+    else
+      warn "$(t pu_lock_stale)"
+      local r; read -rp "$(t pu_lock_ask)" r
+      case "${r,,}" in
+        n|no) ok "$(t pu_lock_kept)" ;;
+        *)    sudo rm -f /var/lib/pacman/db.lck && ok "$(t pu_lock_removed)" ;;
+      esac
+    fi
+  else
+    ok "$(t pu_lock_none)"
+  fi
+
+  if [ "$safe" -ne 0 ]; then
+    err "$(t pu_abort)"; return 1
+  fi
+  ok "$(t pu_safe)"; return 0
+}
+
+# Safe system update: run the pre-update check first, then pacman -Syu.
+fix_update() {
+  fix_preupdate || { warn "$(t pu_update_skipped)"; return 1; }
+  local r; read -rp "$(t pu_update_ask)" r
+  case "${r,,}" in
+    n|no) warn "$(t pu_update_cancelled)"; return 0 ;;
+  esac
+  log "$(t pu_updating)"
+  sudo pacman -Syu
+}
+
+# ==========================================================
+#  FIX — Repair boot: orphan modules, depmod, DKMS, initramfs
+# ==========================================================
+# Removes leftover /usr/lib/modules/<ver> folders of kernels that are no longer
+# installed (which make DKMS and mkinitcpio try to build for kernels that do not
+# exist), then rebuilds everything cleanly. The running kernel is protected.
+fix_repair_boot() {
+  log "$(t rb_title)"
+
+  # A correct initramfs write needs /boot mounted.
+  check_boot || { err "$(t rb_need_boot)"; return 1; }
+
+  local running moddir=/usr/lib/modules
+  running=$(uname -r)
+  ok "$(printf "$(t rb_running_protected)" "$running")"
+
+  local -a orphans=()
+  mapfile -t orphans < <(orphan_modules)
+
+  if [ "${#orphans[@]}" -gt 0 ]; then
+    warn "$(t rb_orphans_found)"
+    local ver
+    for ver in "${orphans[@]}"; do printf '     - %s\n' "$ver"; done
+    local r; read -rp "$(t rb_orphans_ask)" r
+    case "${r,,}" in
+      n|no) warn "$(t rb_orphans_kept)" ;;
+      *)
+        for ver in "${orphans[@]}"; do
+          [ -n "$ver" ] && [ "$ver" != "$running" ] || continue   # paranoia
+          sudo rm -rf -- "$moddir/$ver" && ok "$(printf "$(t rb_orphan_removed)" "$ver")"
+        done ;;
+    esac
+  else
+    ok "$(t rb_no_orphans)"
+  fi
+
+  # Recompute module dependencies for every remaining kernel.
+  log "$(t rb_depmod)"
+  local d ver
+  for d in "$moddir"/*/; do
+    [ -d "$d" ] || continue
+    ver=$(basename "$d")
+    sudo depmod "$ver" 2>/dev/null
+  done
+  ok "$(t rb_depmod_ok)"
+
+  # Clean DKMS rebuild (nvidia-open-dkms, etc.) for all installed kernels.
+  if command -v dkms >/dev/null 2>&1; then
+    log "$(t rb_dkms)"
+    if sudo dkms autoinstall; then ok "$(t rb_dkms_ok)"; else warn "$(t rb_dkms_fail)"; fi
+  else
+    warn "$(t rb_dkms_none)"
+  fi
+
+  # Regenerate every initramfs preset.
+  log "$(t rb_initramfs)"
+  if sudo mkinitcpio -P; then
+    ok "$(t rb_initramfs_ok)"
+  else
+    err "$(t rb_initramfs_fail)"; return 1
+  fi
+
+  ok "$(t rb_done)"
+}
+
+# ==========================================================
+#  FIX — View / remove obsolete (orphan) kernel modules
+# ==========================================================
+# Lighter than repair-boot: just lists the leftover /usr/lib/modules/<ver>
+# folders of no-longer-installed kernels and offers to remove them all. The
+# running kernel is protected. depmod is refreshed afterwards; the full
+# DKMS/initramfs rebuild is left to 'repair-boot'.
+fix_clean_kernels() {
+  log "$(t ck_title)"
+  local running moddir=/usr/lib/modules
+  running=$(uname -r)
+
+  local -a orphans=()
+  mapfile -t orphans < <(orphan_modules)
+  if [ "${#orphans[@]}" -eq 0 ]; then
+    ok "$(t rb_no_orphans)"
+    return 0
+  fi
+
+  warn "$(t rb_orphans_found)"
+  local ver sz
+  for ver in "${orphans[@]}"; do
+    sz=$(du -sh "$moddir/$ver" 2>/dev/null | awk '{print $1}')
+    printf '     - %s  (%s)\n' "$ver" "${sz:-?}"
+  done
+  ok "$(printf "$(t rb_running_protected)" "$running")"
+
+  local r; read -rp "$(t ck_delete_all_ask)" r
+  case "${r,,}" in
+    s|si|sí|y|yes) ;;
+    *) warn "$(t rb_orphans_kept)"; return 0 ;;
+  esac
+
+  for ver in "${orphans[@]}"; do
+    [ -n "$ver" ] && [ "$ver" != "$running" ] || continue   # paranoia
+    sudo rm -rf -- "$moddir/$ver" && ok "$(printf "$(t rb_orphan_removed)" "$ver")"
+  done
+  sudo depmod "$running" 2>/dev/null   # keep deps consistent
+  ok "$(t ck_done)"
+}
+
+# ==========================================================
 #  STATUS
 # ==========================================================
 status() {
@@ -550,6 +842,15 @@ status() {
   else
     printf "$(t st_wifi_none)"
   fi
+  # Boot / kernel-module health.
+  if mountpoint -q /boot; then
+    printf "$(t st_boot_mounted)"
+  elif boot_in_fstab; then
+    printf "$(t st_boot_unmounted)"
+  else
+    printf "$(t st_boot_onroot)"
+  fi
+  printf "$(t st_orphans)" "$(orphan_modules | grep -c .)"
 }
 
 # ==========================================================
@@ -561,10 +862,14 @@ case "${1:-all}" in
   fnkeys|fn|fnmode)        fix_fnkeys "${2:-}" ;;
   wifi)                    fix_wifi ;;
   mirrors|mirror|espejos)  fix_mirrors ;;
+  preupdate|precheck|precomprobacion)  fix_preupdate ;;
+  update|actualizar)       fix_update ;;
+  repair-boot|repairboot|kernel|bootfix)  fix_repair_boot ;;
+  clean-kernels|cleankernels|obsolete)    fix_clean_kernels ;;
   estado|status)           status ;;
   all|"")                  fix_keyboard; echo; fix_numlock; echo; fix_wifi; echo; status ;;
   -h|--help|help)
-    sed -n '3,16p' "$0" | sed 's/^# \{0,1\}//' ;;
+    sed -n '3,17p' "$0" | sed 's/^# \{0,1\}//' ;;
   *)
     err "$(printf "$(t unknown_opt)" "$1")"
     err "$(t usage)"

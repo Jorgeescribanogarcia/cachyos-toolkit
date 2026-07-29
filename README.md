@@ -31,9 +31,10 @@ Sections:
     selection and then **install all** or **uninstall all** at once (with
     options to remove an item or clear it).
 - **Configuration** — fixes and tweaks by category (Network, Keyboard,
-  Mirrors & packages) plus a **default web browser** picker (detects the
-  installed browsers and sets the default with `xdg-settings`). Uses
-  `cachyos-fix` as the engine for the fixes.
+  Mirrors & packages), a **default web browser** picker (detects the installed
+  browsers and sets the default with `xdg-settings`), and **Updates &
+  maintenance** (pre-update safety check, safe system update, boot/kernel repair
+  and obsolete-kernel cleanup). Uses `cachyos-fix` as the engine for the fixes.
 - **Services** — a service/session manager built **dynamically** from systemd
   (nothing hardcoded). It spans both the **system** manager (actions use `sudo`)
   and the **user session** (`systemctl --user`, no `sudo`), with filters:
@@ -56,7 +57,7 @@ It auto-detects `paru`/`yay`/`pacman`.
 Fix engine, idempotent. Direct usage:
 
 ```bash
-cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|status]
+cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|preupdate|update|repair-boot|status]
 ```
 
 (Spanish aliases still work: `teclado`, `estado`, `mirror`.)
@@ -77,6 +78,18 @@ cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|status]
 - **mirrors** — reorders the mirror list (`cachyos-rate-mirrors`, with
   `rate-mirrors`/`reflector` as a fallback) and forces `pacman -Syy`. Fixes
   the 404 errors on update when mirrors are out of sync.
+- **preupdate** — pre-update safety check: makes sure `/boot` is mounted (mounts
+  it if `fstab` expects it, otherwise aborts) and clears a stale `db.lck` (only
+  when no `pacman` is running). Prevents kernel/module drift and lock errors.
+- **update** — safe update: runs `preupdate` and, if it passes, `pacman -Syu`.
+- **repair-boot** — repairs a broken boot after a kernel mess: removes orphan
+  `/usr/lib/modules/<ver>` folders of kernels no longer installed (the running
+  kernel is protected; ownership is checked via `pacman -Ql`, not the
+  path-resolving `pacman -Qo`), then runs `depmod`, `dkms autoinstall` and
+  `mkinitcpio -P`.
+- **clean-kernels** — lighter cleanup: lists the obsolete `/usr/lib/modules`
+  folders (with their size) and removes them all (running kernel protected),
+  refreshing `depmod` only. Does not rebuild DKMS/initramfs.
 
 ## Install on another CachyOS machine
 

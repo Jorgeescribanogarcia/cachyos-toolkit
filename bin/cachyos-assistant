@@ -141,6 +141,7 @@ MSG_EN[cfg_network]="Network and connectivity"
 MSG_EN[cfg_keyboard]="Keyboard and language"
 MSG_EN[cfg_mirrors]="Mirrors and packages"
 MSG_EN[cfg_browser]="Default web browser"
+MSG_EN[cfg_maintenance]="Updates and maintenance (boot, kernel)"
 MSG_EN[cfg_apply_all]="Apply ALL fixes"
 MSG_EN[cfg_apply_all_confirm]="Apply ALL known fixes?"
 MSG_EN[fix_not_found]="cachyos-fix not found."
@@ -189,6 +190,15 @@ MSG_EN[browser_set_fail]="Could not set the default browser."
 MSG_EN[browser_no_xdg]="'xdg-settings' not found; it comes in the 'xdg-utils' package."
 MSG_EN[browser_install_xdg]="Install 'xdg-utils' now?"
 MSG_EN[browser_xdg_fail]="Could not install 'xdg-utils'."
+MSG_EN[maint_title]="Configuration › Updates and maintenance"
+MSG_EN[maint_preupdate]="Pre-update safety check"
+MSG_EN[maint_update]="Safe system update (check + upgrade)"
+MSG_EN[maint_repair]="Repair boot (orphan kernel modules, DKMS, initramfs)"
+MSG_EN[maint_clean]="View / remove obsolete kernels"
+MSG_EN[desc_preupdate]="Before updating: checks that /boot is mounted (mounts it if fstab expects it, or aborts) and clears a stale pacman lock (db.lck) — only if no pacman is running. Prevents kernel/module drift and lock errors."
+MSG_EN[desc_update]="Runs the pre-update safety check and, if it passes, updates the whole system with 'pacman -Syu'."
+MSG_EN[desc_repair]="Fixes a broken boot after a kernel mess: removes orphan /usr/lib/modules folders of kernels that are no longer installed (the running one is protected), then runs depmod, rebuilds DKMS modules and regenerates every initramfs (mkinitcpio -P)."
+MSG_EN[desc_clean]="Lists the leftover /usr/lib/modules folders of kernels that are no longer installed (with their size) and offers to remove them all. The running kernel is protected. Lighter than «Repair boot»: it does not rebuild DKMS or initramfs."
 MSG_EN[status_title]="System status"
 MSG_EN[fix_not_found_basic]="cachyos-fix not found; showing the basics:"
 MSG_EN[main_pkgmgr]="Package manager: %s"
@@ -326,6 +336,7 @@ MSG_ES[cfg_network]="Red y conectividad"
 MSG_ES[cfg_keyboard]="Teclado e idioma"
 MSG_ES[cfg_mirrors]="Mirrors y paquetes"
 MSG_ES[cfg_browser]="Navegador web predeterminado"
+MSG_ES[cfg_maintenance]="Actualizaciones y mantenimiento (arranque, kernel)"
 MSG_ES[cfg_apply_all]="Aplicar TODOS los arreglos"
 MSG_ES[cfg_apply_all_confirm]="¿Aplicar TODOS los arreglos conocidos?"
 MSG_ES[fix_not_found]="No se encuentra 'cachyos-fix'."
@@ -374,6 +385,15 @@ MSG_ES[browser_set_fail]="No se pudo fijar el navegador predeterminado."
 MSG_ES[browser_no_xdg]="No se encuentra 'xdg-settings'; viene en el paquete 'xdg-utils'."
 MSG_ES[browser_install_xdg]="¿Instalar 'xdg-utils' ahora?"
 MSG_ES[browser_xdg_fail]="No se pudo instalar 'xdg-utils'."
+MSG_ES[maint_title]="Configuración › Actualizaciones y mantenimiento"
+MSG_ES[maint_preupdate]="Chequeo de seguridad previo a actualizar"
+MSG_ES[maint_update]="Actualización segura del sistema (chequeo + upgrade)"
+MSG_ES[maint_repair]="Reparar arranque (módulos huérfanos, DKMS, initramfs)"
+MSG_ES[maint_clean]="Ver / eliminar kernels obsoletos"
+MSG_ES[desc_preupdate]="Antes de actualizar: comprueba que /boot esté montado (lo monta si fstab lo espera, o aborta) y limpia un bloqueo de pacman obsoleto (db.lck) — solo si no hay pacman en ejecución. Evita el desfase kernel/módulos y errores de bloqueo."
+MSG_ES[desc_update]="Ejecuta el chequeo de seguridad previo y, si pasa, actualiza todo el sistema con 'pacman -Syu'."
+MSG_ES[desc_repair]="Arregla un arranque roto tras un lío de kernels: elimina las carpetas huérfanas de /usr/lib/modules de kernels que ya no están instalados (el que está en uso queda protegido), y luego ejecuta depmod, recompila los módulos DKMS y regenera todos los initramfs (mkinitcpio -P)."
+MSG_ES[desc_clean]="Lista las carpetas sobrantes de /usr/lib/modules de kernels que ya no están instalados (con su tamaño) y ofrece eliminarlas todas. El kernel en uso queda protegido. Más ligero que «Reparar arranque»: no recompila DKMS ni initramfs."
 MSG_ES[status_title]="Estado del sistema"
 MSG_ES[fix_not_found_basic]="No se encuentra 'cachyos-fix'; muestro lo básico:"
 MSG_ES[main_pkgmgr]="Gestor de paquetes: %s"
@@ -1036,6 +1056,7 @@ config_section() {
     printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_keyboard)"
     printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_mirrors)"
     printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_browser)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_maintenance)"
     printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_apply_all)"
     printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
 
@@ -1045,6 +1066,7 @@ config_section() {
       2) fix_keyboard_menu ;;
       3) fix_mirrors_menu ;;
       4) config_browser_menu ;;
+      5) fix_maintenance_menu ;;
       a|A)
         if has_cachyos_fix; then
           confirm "$(t cfg_apply_all_confirm)" && run_fix all
@@ -1100,6 +1122,23 @@ fix_mirrors_menu() {
   local op; read -rp "$(t choose)" op
   case "$op" in
     1) apply_fix mirrors "$(t desc_mirrors)" ;;
+    *) : ;;
+  esac
+}
+
+fix_maintenance_menu() {
+  header "$(t maint_title)"
+  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t maint_preupdate)"
+  printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t maint_update)"
+  printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t maint_repair)"
+  printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t maint_clean)"
+  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+  local op; read -rp "$(t choose)" op
+  case "$op" in
+    1) apply_fix preupdate    "$(t desc_preupdate)" ;;
+    2) apply_fix update       "$(t desc_update)" ;;
+    3) apply_fix repair-boot  "$(t desc_repair)" ;;
+    4) apply_fix clean-kernels "$(t desc_clean)" ;;
     *) : ;;
   esac
 }
