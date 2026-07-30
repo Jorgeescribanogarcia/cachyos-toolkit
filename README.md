@@ -91,13 +91,37 @@ cachyos-fix [all|keyboard|numlock|fnkeys|wifi|mirrors|preupdate|update|repair-bo
   folders (with their size) and removes them all (running kernel protected),
   refreshing `depmod` only. Does not rebuild DKMS/initramfs.
 
-## Install on another CachyOS machine
+## Install
+
+Download the installer from the [latest release](../../releases/latest) and run
+it (a small menu with **Install** / **Uninstall**):
 
 ```bash
-git clone <repo> ~/Escritorio/cachyos-toolkit
-ln -sf ~/Escritorio/cachyos-toolkit/bin/cachyos-assistant ~/.local/bin/
-ln -sf ~/Escritorio/cachyos-toolkit/bin/cachyos-fix       ~/.local/bin/
+curl -fsSL https://github.com/Jorgeescribanogarcia/cachyos-toolkit/releases/latest/download/install.sh -o install.sh
+bash install.sh
 ```
 
-Neither should be run as root; they ask for `sudo` when they need it.
+**Install** downloads the toolkit into `~/.local/share/cachyos-toolkit` (a git
+clone), and registers a `cachyos-toolkit` command in `~/.local/bin` plus an app
+launcher, so it shows up in the application menu / KRunner (Alt+Space) as
+**CachyOS Toolkit** and opens in a terminal. Everything is user-level (no root).
+**Uninstall** removes all of it, including the downloaded folder.
+
+Because the install is a git clone, on every launch the assistant quietly checks
+for a newer version and offers to update (`git pull`) — keeping the command and
+launcher current. There is also a manual *Check for updates* in the main menu's
+*Install this toolkit as an app* screen. Set `CACHYOS_NO_UPDATE_CHECK=1` to skip
+the automatic check.
+
+### Manual / from a clone
+
+You can also just clone and run it, then use **Install this toolkit as an app**
+from the main menu to register the current clone:
+
+```bash
+git clone https://github.com/Jorgeescribanogarcia/cachyos-toolkit.git
+./cachyos-toolkit/bin/cachyos-assistant
+```
+
+Neither script should be run as root; they ask for `sudo` when they need it.
 

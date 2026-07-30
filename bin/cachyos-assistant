@@ -199,17 +199,42 @@ MSG_EN[desc_preupdate]="Before updating: checks that /boot is mounted (mounts it
 MSG_EN[desc_update]="Runs the pre-update safety check and, if it passes, updates the whole system with 'pacman -Syu'."
 MSG_EN[desc_repair]="Fixes a broken boot after a kernel mess: removes orphan /usr/lib/modules folders of kernels that are no longer installed (the running one is protected), then runs depmod, rebuilds DKMS modules and regenerates every initramfs (mkinitcpio -P)."
 MSG_EN[desc_clean]="Lists the leftover /usr/lib/modules folders of kernels that are no longer installed (with their size) and offers to remove them all. The running kernel is protected. Lighter than «Repair boot»: it does not rebuild DKMS or initramfs."
+MSG_EN[ia_title]="Install this toolkit as an app"
+MSG_EN[ia_status_installed]="Status: installed (launcher + 'cachyos-toolkit' command)."
+MSG_EN[ia_status_not]="Status: not installed."
+MSG_EN[ia_install]="Install (app launcher + terminal command)"
+MSG_EN[ia_uninstall]="Uninstall (remove launcher and command)"
+MSG_EN[ia_check_updates]="Check for updates now"
+MSG_EN[ia_already]="It is already installed."
+MSG_EN[ia_comment]="Install apps, apply fixes, manage services and system maintenance for CachyOS"
+MSG_EN[ia_cmd_ok]="Command installed: %s"
+MSG_EN[ia_desktop_ok]="Launcher installed: %s"
+MSG_EN[ia_path_warn]="Note: %s is not in your PATH; add it so 'cachyos-toolkit' works in the terminal."
+MSG_EN[ia_repo_note]="Keep the repository where it is: the launcher and command point to it."
+MSG_EN[ia_done]="Done. Search «CachyOS Toolkit» (Alt+Space) or run 'cachyos-toolkit'."
+MSG_EN[ia_uninstalled]="Uninstalled (launcher and command removed)."
+MSG_EN[ia_not_installed]="It was not installed; nothing to remove."
 MSG_EN[status_title]="System status"
 MSG_EN[fix_not_found_basic]="cachyos-fix not found; showing the basics:"
 MSG_EN[main_pkgmgr]="Package manager: %s"
 MSG_EN[main_install]="Install applications"
 MSG_EN[main_config]="Configuration"
 MSG_EN[main_status]="System status"
+MSG_EN[main_install_app]="Install this toolkit as an app"
 MSG_EN[main_language]="Language / Idioma"
 MSG_EN[exit]="Exit"
 MSG_EN[main_choose]="Choose an option: "
 MSG_EN[lang_title]="Language / Idioma"
 MSG_EN[lang_saved]="Language set to English."
+MSG_EN[upd_title]="Update"
+MSG_EN[upd_checking]="Checking for updates…"
+MSG_EN[upd_available]="A new version is available (%s new commit(s))."
+MSG_EN[upd_ask]="Update now?"
+MSG_EN[upd_done]="Updated. Restarting…"
+MSG_EN[upd_fail]="Could not update automatically (try 'git pull' in the repo)."
+MSG_EN[upd_uptodate]="Already up to date."
+MSG_EN[upd_no_repo]="Not a git clone with an upstream; updates can't be checked here."
+MSG_EN[upd_offline]="Could not reach the repository (offline?)."
 MSG_EN[main_services]="Services"
 # Services (systemd manager)
 MSG_EN[svc_title]="Services"
@@ -394,17 +419,42 @@ MSG_ES[desc_preupdate]="Antes de actualizar: comprueba que /boot esté montado (
 MSG_ES[desc_update]="Ejecuta el chequeo de seguridad previo y, si pasa, actualiza todo el sistema con 'pacman -Syu'."
 MSG_ES[desc_repair]="Arregla un arranque roto tras un lío de kernels: elimina las carpetas huérfanas de /usr/lib/modules de kernels que ya no están instalados (el que está en uso queda protegido), y luego ejecuta depmod, recompila los módulos DKMS y regenera todos los initramfs (mkinitcpio -P)."
 MSG_ES[desc_clean]="Lista las carpetas sobrantes de /usr/lib/modules de kernels que ya no están instalados (con su tamaño) y ofrece eliminarlas todas. El kernel en uso queda protegido. Más ligero que «Reparar arranque»: no recompila DKMS ni initramfs."
+MSG_ES[ia_title]="Instalar esta herramienta como app"
+MSG_ES[ia_status_installed]="Estado: instalada (lanzador + comando 'cachyos-toolkit')."
+MSG_ES[ia_status_not]="Estado: no instalada."
+MSG_ES[ia_install]="Instalar (lanzador de app + comando de terminal)"
+MSG_ES[ia_uninstall]="Desinstalar (quitar lanzador y comando)"
+MSG_ES[ia_check_updates]="Buscar actualizaciones ahora"
+MSG_ES[ia_already]="Ya está instalada."
+MSG_ES[ia_comment]="Instala apps, aplica arreglos, gestiona servicios y mantenimiento del sistema en CachyOS"
+MSG_ES[ia_cmd_ok]="Comando instalado: %s"
+MSG_ES[ia_desktop_ok]="Lanzador instalado: %s"
+MSG_ES[ia_path_warn]="Aviso: %s no está en tu PATH; añádelo para que 'cachyos-toolkit' funcione en la terminal."
+MSG_ES[ia_repo_note]="Deja el repositorio donde está: el lanzador y el comando apuntan a él."
+MSG_ES[ia_done]="Hecho. Busca «CachyOS Toolkit» (Alt+Espacio) o ejecuta 'cachyos-toolkit'."
+MSG_ES[ia_uninstalled]="Desinstalada (lanzador y comando eliminados)."
+MSG_ES[ia_not_installed]="No estaba instalada; nada que quitar."
 MSG_ES[status_title]="Estado del sistema"
 MSG_ES[fix_not_found_basic]="No se encuentra 'cachyos-fix'; muestro lo básico:"
 MSG_ES[main_pkgmgr]="Gestor de paquetes: %s"
 MSG_ES[main_install]="Instalar aplicaciones"
 MSG_ES[main_config]="Configuración"
 MSG_ES[main_status]="Estado del sistema"
+MSG_ES[main_install_app]="Instalar esta herramienta como app"
 MSG_ES[main_language]="Idioma / Language"
 MSG_ES[exit]="Salir"
 MSG_ES[main_choose]="Elige una opción: "
 MSG_ES[lang_title]="Idioma / Language"
 MSG_ES[lang_saved]="Idioma cambiado a español."
+MSG_ES[upd_title]="Actualización"
+MSG_ES[upd_checking]="Buscando actualizaciones…"
+MSG_ES[upd_available]="Hay una versión nueva disponible (%s commit(s) nuevos)."
+MSG_ES[upd_ask]="¿Actualizar ahora?"
+MSG_ES[upd_done]="Actualizado. Reiniciando…"
+MSG_ES[upd_fail]="No se pudo actualizar automáticamente (prueba 'git pull' en el repo)."
+MSG_ES[upd_uptodate]="Ya está actualizado."
+MSG_ES[upd_no_repo]="No es un clon git con upstream; aquí no se pueden buscar actualizaciones."
+MSG_ES[upd_offline]="No se pudo contactar con el repositorio (¿sin conexión?)."
 MSG_ES[main_services]="Servicios"
 # Servicios (gestor de systemd)
 MSG_ES[svc_title]="Servicios"
@@ -1143,6 +1193,90 @@ fix_maintenance_menu() {
   esac
 }
 
+# ------------------------------------------------------------------
+# Install this toolkit as an app: a launcher (.desktop, shows up in the app
+# menu / KRunner) and a 'cachyos-toolkit' command in ~/.local/bin. Both are
+# symlinks/paths into the repo, so 'git pull' keeps them up to date and the
+# assistant still finds cachyos-fix next to itself. User-level, no sudo.
+# ------------------------------------------------------------------
+APP_SELF="$SCRIPT_DIR/cachyos-assistant"               # real assistant path
+APP_BIN="$HOME/.local/bin/cachyos-toolkit"
+APP_DESKTOP="$HOME/.local/share/applications/cachyos-toolkit.desktop"
+
+app_is_installed() { [ -L "$APP_BIN" ] || [ -e "$APP_DESKTOP" ]; }
+
+install_app_do() {
+  mkdir -p "$HOME/.local/bin" "$HOME/.local/share/applications"
+
+  # 1) terminal command
+  ln -sf "$APP_SELF" "$APP_BIN"
+  ok "$(printf "$(t ia_cmd_ok)" "$APP_BIN")"
+
+  # 2) desktop launcher (Terminal=true → the DE opens it in its terminal)
+  cat > "$APP_DESKTOP" <<DESKTOP
+[Desktop Entry]
+Type=Application
+Name=CachyOS Toolkit
+GenericName=System configuration assistant
+Comment=$(t ia_comment)
+Exec=$APP_SELF
+Icon=applications-system
+Terminal=true
+Categories=System;
+Keywords=cachyos;toolkit;assistant;config;fixes;services;
+DESKTOP
+  ok "$(printf "$(t ia_desktop_ok)" "$APP_DESKTOP")"
+  command -v update-desktop-database >/dev/null 2>&1 \
+    && update-desktop-database "$HOME/.local/share/applications" 2>/dev/null
+
+  # PATH hint for the terminal command
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) : ;;
+    *) warn "$(printf "$(t ia_path_warn)" "$HOME/.local/bin")" ;;
+  esac
+  warn "$(t ia_repo_note)"
+  ok "$(t ia_done)"
+}
+
+install_app_undo() {
+  local removed=1
+  [ -e "$APP_BIN" ] || [ -L "$APP_BIN" ] && { rm -f "$APP_BIN"; removed=0; }
+  [ -e "$APP_DESKTOP" ] && { rm -f "$APP_DESKTOP"; removed=0; }
+  command -v update-desktop-database >/dev/null 2>&1 \
+    && update-desktop-database "$HOME/.local/share/applications" 2>/dev/null
+  if [ "$removed" -eq 0 ]; then ok "$(t ia_uninstalled)"; else warn "$(t ia_not_installed)"; fi
+}
+
+install_app_menu() {
+  while true; do
+    header "$(t ia_title)"
+    local installed=0; app_is_installed && installed=1
+    if [ "$installed" -eq 1 ]; then
+      printf '%s%s%s\n\n' "$C_DIM" "$(t ia_status_installed)" "$C_RESET"
+      # Install dimmed (already installed), Uninstall active.
+      printf '  %s1) %s%s\n'  "$C_DIM" "$(t ia_install)" "$C_RESET"
+      printf '  %s2)%s %s\n'  "$C_B" "$C_RESET" "$(t ia_uninstall)"
+    else
+      printf '%s%s%s\n\n' "$C_DIM" "$(t ia_status_not)" "$C_RESET"
+      # Install active, Uninstall dimmed (nothing installed).
+      printf '  %s1)%s %s\n'  "$C_B" "$C_RESET" "$(t ia_install)"
+      printf '  %s2) %s%s\n'  "$C_DIM" "$(t ia_uninstall)" "$C_RESET"
+    fi
+    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t ia_check_updates)"
+    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local op; read -rp "$(t choose)" op
+    case "$op" in
+      1) if [ "$installed" -eq 1 ]; then warn "$(t ia_already)"; pause
+         else install_app_do; pause; fi ;;
+      2) if [ "$installed" -eq 1 ]; then install_app_undo; pause
+         else warn "$(t ia_not_installed)"; pause; fi ;;
+      3) run_update_check manual ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
 # Detect installed web browsers dynamically: any .desktop entry that registers
 # the http(s) URL scheme is a candidate. Prints "desktop-id<TAB>Name" per browser.
 detect_browsers() {
@@ -1718,7 +1852,8 @@ main_menu() {
     printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t main_config)"
     printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t main_services)"
     printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t main_status)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
+    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t main_install_app)"
+    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
     printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t exit)"
 
     local op; read -rp "$(t main_choose)" op
@@ -1727,15 +1862,75 @@ main_menu() {
       2) config_section ;;
       3) services_section ;;
       4) status_section ;;
-      5) choose_language ;;
+      5) install_app_menu ;;
+      6) choose_language ;;
       0|q|Q) header "$(t goodbye)"; exit 0 ;;
       *) warn "$(t invalid_option)"; pause ;;
     esac
   done
 }
 
+# ==================================================================
+#  UPDATE CHECK (against the git repository)
+# ==================================================================
+# Check the git repo for a newer version and offer to pull.
+#   $1 = "auto"   (startup): silent unless there is an update; disabled by
+#                 CACHYOS_NO_UPDATE_CHECK=1.
+#   $1 = "manual" (from the menu): always reports the result (up to date /
+#                 offline / not a clone), and pauses.
+# Fail-soft everywhere; the fetch has a timeout so a bad network never hangs.
+run_update_check() {
+  local mode="${1:-auto}"
+  [ "$mode" = auto ] && [ -n "${CACHYOS_NO_UPDATE_CHECK:-}" ] && return 0
+
+  if [ "$mode" = manual ]; then
+    header "$(t upd_title)"
+    printf '%s%s%s\n\n' "$C_DIM" "$(t upd_checking)" "$C_RESET"
+  fi
+
+  # Preconditions: git available, a clone, with an upstream.
+  local repo=""
+  if command -v git >/dev/null 2>&1; then
+    repo=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)
+    [ -n "$repo" ] && git -C "$repo" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1 || repo=""
+  fi
+  if [ -z "$repo" ]; then
+    [ "$mode" = manual ] && { warn "$(t upd_no_repo)"; pause; }
+    return 0
+  fi
+
+  # Quiet fetch, never prompt for credentials, bail after a few seconds.
+  if ! GIT_TERMINAL_PROMPT=0 timeout 8 git -C "$repo" fetch --quiet 2>/dev/null; then
+    [ "$mode" = manual ] && { warn "$(t upd_offline)"; pause; }
+    return 0
+  fi
+
+  local behind
+  behind=$(git -C "$repo" rev-list --count 'HEAD..@{u}' 2>/dev/null)
+  if ! [ "${behind:-0}" -gt 0 ] 2>/dev/null; then
+    [ "$mode" = manual ] && { ok "$(t upd_uptodate)"; pause; }
+    return 0
+  fi
+
+  # An update is available.
+  [ "$mode" = auto ] && header "$(t upd_title)"
+  warn "$(printf "$(t upd_available)" "$behind")"
+  if confirm "$(t upd_ask)"; then
+    if GIT_TERMINAL_PROMPT=0 git -C "$repo" pull --ff-only; then
+      ok "$(t upd_done)"; pause
+      export CACHYOS_NO_UPDATE_CHECK=1   # avoid re-checking on the restart
+      exec "$SCRIPT_DIR/cachyos-assistant"
+    else
+      err "$(t upd_fail)"; pause
+    fi
+  else
+    [ "$mode" = manual ] && pause
+  fi
+}
+
 # ---------------------------- Startup -----------------------------
 load_lang
 # First run (no env override, no saved choice): ask once and remember it.
 [ "$LANG_SOURCE" = default ] && choose_language
+run_update_check auto
 main_menu
