@@ -12,6 +12,12 @@ Interactive menu-driven assistant. Run it with no arguments:
 cachyos-assistant
 ```
 
+Navigate with the **arrow keys** (↑/↓ move, Enter selects, Space ticks items in
+the multi-select install menus, `q`/Esc go back) — or just type the number/letter
+as a shortcut. On first run it asks the language and the navigation mode; both
+can be changed later (language and *Configuration › Navigation mode*). The
+classic *numbers* mode is also a fallback for terminals where arrow keys misbehave.
+
 Sections:
 - **Install applications** — by category. Prefers **CachyOS-optimized**
   packages (`x86-64-v3/v4` repos; for gaming it uses `cachyos-gaming-meta`,

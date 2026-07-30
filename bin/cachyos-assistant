@@ -26,6 +26,22 @@ LANG_FILE="$CONFIG_DIR/lang"
 UI_LANG="en"          # resolved by load_lang()
 LANG_SOURCE="default" # env | file | default
 
+# Navigation mode: "arrows" (↑/↓ + Enter, numbers still work as shortcuts) or
+# "numbers" (classic: type the number/letter). Remembered in $NAV_FILE.
+NAV_FILE="$CONFIG_DIR/nav"
+NAV_MODE="arrows"
+NAV_SOURCE="default"  # env | file | default
+load_nav() {
+  if   [ -n "${CACHYOS_NAV:-}" ]; then NAV_MODE="$CACHYOS_NAV"; NAV_SOURCE="env"
+  elif [ -r "$NAV_FILE" ];       then NAV_MODE="$(<"$NAV_FILE")"; NAV_SOURCE="file"
+  else                                NAV_MODE="arrows"; NAV_SOURCE="default"; fi
+  case "$NAV_MODE" in arrows|numbers) ;; *) NAV_MODE="arrows" ;; esac
+}
+save_nav() {
+  mkdir -p "$CONFIG_DIR" 2>/dev/null || return 0
+  printf '%s\n' "$NAV_MODE" > "$NAV_FILE" 2>/dev/null || true
+}
+
 # Guess the default language from the system locale (Spanish -> es, else en).
 detect_system_lang() {
   case "${LC_ALL:-}${LC_MESSAGES:-}${LANG:-}" in
@@ -57,6 +73,15 @@ declare -A MSG_EN MSG_ES
 # --- English catalog ---
 MSG_EN[app_title]="CachyOS Assistant"
 MSG_EN[press_enter]="Press Enter to continue…"
+MSG_EN[nav_hint]="↑/↓ move · Enter select · number key = shortcut · q/Esc back"
+MSG_EN[multi_keys]="↑/↓ move · Space select · a all · Enter confirm · L list · q back"
+MSG_EN[nav_title]="Navigation mode"
+MSG_EN[nav_intro]="How do you want to move through the menus?"
+MSG_EN[nav_opt_arrows]="Arrows ↑/↓ + Enter (numbers still work as shortcuts)"
+MSG_EN[nav_opt_numbers]="Classic: type the number/letter"
+MSG_EN[nav_prompt]="Choose [1]: "
+MSG_EN[nav_saved]="Navigation mode: %s"
+MSG_EN[cfg_nav]="Navigation mode (arrows / numbers)"
 MSG_EN[invalid_option]="Invalid option."
 MSG_EN[yn_hint]="y/N"
 MSG_EN[goodbye]="See you!"
@@ -277,6 +302,15 @@ MSG_EN[svc_xampp_create_fail]="Could not create the xampp autostart service."
 # --- Spanish catalog ---
 MSG_ES[app_title]="Asistente de CachyOS"
 MSG_ES[press_enter]="Pulsa Enter para continuar…"
+MSG_ES[nav_hint]="↑/↓ mover · Enter elegir · tecla numérica = atajo · q/Esc volver"
+MSG_ES[multi_keys]="↑/↓ mover · Espacio marcar · a todo · Enter confirmar · L lista · q volver"
+MSG_ES[nav_title]="Modo de navegación"
+MSG_ES[nav_intro]="¿Cómo quieres moverte por los menús?"
+MSG_ES[nav_opt_arrows]="Flechas ↑/↓ + Enter (los números siguen valiendo como atajo)"
+MSG_ES[nav_opt_numbers]="Clásico: teclear el número/letra"
+MSG_ES[nav_prompt]="Elige [1]: "
+MSG_ES[nav_saved]="Modo de navegación: %s"
+MSG_ES[cfg_nav]="Modo de navegación (flechas / números)"
 MSG_ES[invalid_option]="Opción no válida."
 MSG_ES[yn_hint]="s/N"
 MSG_ES[goodbye]="¡Hasta luego!"
@@ -522,6 +556,135 @@ confirm() { # $1 = question ; returns 0 on yes
   [[ "$r" =~ ^[sSyY]$ ]]
 }
 
+# ---------------- Single-choice menu (arrow / number nav) ---------
+# Renders a menu and stores the chosen key in MENU_RESULT. Respects NAV_MODE:
+#   arrows  → ↑/↓ (or k/j) move, Enter picks the highlighted row, pressing a
+#             row's key selects it directly, q/Esc/← return the back key.
+#   numbers → classic: print the list and read a typed key/line.
+# Args: <title> <keys_array_name> <labels_array_name> [back_key]. An optional
+# dim info line can be shown by setting MENU_INFO before the call.
+MENU_RESULT=""
+MENU_INFO=""
+menu_pick() {
+  local title="$1"; local -n _pk="$2" _pl="$3"; local back="${4:-0}"
+  local n="${#_pk[@]}" i
+
+  if [ "$NAV_MODE" = numbers ]; then
+    header "$title"
+    [ -n "$MENU_INFO" ] && printf '%s\n\n' "$MENU_INFO"
+    for i in "${!_pk[@]}"; do
+      printf '  %s%s)%s %s\n' "$C_B" "${_pk[$i]}" "$C_RESET" "${_pl[$i]}"
+    done
+    local op; read -rp "$(printf '\n%s' "$(t choose)")" op
+    MENU_RESULT="${op:-$back}"
+    return
+  fi
+
+  # arrows mode
+  local sel=0 k rest
+  while true; do
+    header "$title"
+    [ -n "$MENU_INFO" ] && printf '%s\n\n' "$MENU_INFO"
+    for i in "${!_pk[@]}"; do
+      if [ "$i" -eq "$sel" ]; then
+        printf '  %s▸ %s)%s %s\n' "$C_CYAN$C_B" "${_pk[$i]}" "$C_RESET" "${_pl[$i]}"
+      else
+        printf '    %s%s)%s %s\n' "$C_DIM" "${_pk[$i]}" "$C_RESET" "${_pl[$i]}"
+      fi
+    done
+    printf '\n%s%s%s' "$C_DIM" "$(t nav_hint)" "$C_RESET"
+    IFS= read -rsn1 k
+    case "$k" in
+      '')  MENU_RESULT="${_pk[$sel]}"; return ;;                  # Enter
+      $'\x1b')
+        read -rsn2 -t 0.05 rest 2>/dev/null
+        case "$rest" in
+          '[A') sel=$(( (sel-1+n)%n )) ;;                         # up
+          '[B') sel=$(( (sel+1)%n )) ;;                           # down
+          '[D'|'') MENU_RESULT="$back"; return ;;                 # left / bare Esc
+        esac ;;
+      k|K) sel=$(( (sel-1+n)%n )) ;;
+      j|J) sel=$(( (sel+1)%n )) ;;
+      q|Q) MENU_RESULT="$back"; return ;;
+      *)
+        for i in "${!_pk[@]}"; do
+          [ "${_pk[$i],,}" = "${k,,}" ] && { MENU_RESULT="${_pk[$i]}"; return; }
+        done ;;
+    esac
+  done
+}
+
+# ---------------- Multi-choice menu (checkboxes) ------------------
+# Lets you tick several items. Sets MULTI_ACTION and MULTI_SEL (0-based indices):
+#   ok     → MULTI_SEL has ≥1 selected item
+#   empty  → Enter pressed with nothing selected (caller usually warns + stays)
+#   list   → the user asked to open the installation list ('L')
+#   cancel → the user backed out (q/Esc/←/0 or empty line)
+# NAV_MODE: arrows → ↑/↓ move, Space (or a digit) toggles, 'a' toggles all,
+# Enter confirms; numbers → classic "type 1 3 5", 'a'=all, 'L'=list, 0=back.
+declare -a MULTI_SEL=()
+MULTI_ACTION=""
+menu_pick_multi() {
+  local title="$1"; local -n _ml="$2"
+  local n="${#_ml[@]}" i
+  MULTI_SEL=(); MULTI_ACTION=""
+
+  if [ "$NAV_MODE" = numbers ]; then
+    header "$title"
+    for i in "${!_ml[@]}"; do printf '  %s%2d)%s %s\n' "$C_B" "$((i+1))" "$C_RESET" "${_ml[$i]}"; done
+    printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t install_all)"
+    printf '  %sL)%s %s\n'   "$C_B" "$C_RESET" "$(printf "$(t view_list)" "${#LIST_NAMES[@]}")"
+    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    local line; read -rp "$(t cat_prompt)" line
+    case "$line" in
+      0|"") MULTI_ACTION=cancel; return ;;
+      [lL]) MULTI_ACTION=list; return ;;
+      [aA]) for i in "${!_ml[@]}"; do MULTI_SEL+=("$i"); done; MULTI_ACTION=ok; return ;;
+    esac
+    line=${line//,/ }
+    local nn
+    for nn in $line; do
+      [[ "$nn" =~ ^[0-9]+$ ]] && [ "$nn" -ge 1 ] && [ "$nn" -le "$n" ] && MULTI_SEL+=("$((nn-1))")
+    done
+    [ "${#MULTI_SEL[@]}" -gt 0 ] && MULTI_ACTION=ok || MULTI_ACTION=empty
+    return
+  fi
+
+  # arrows mode: checkboxes
+  local -a chk=(); for i in $(seq 0 $((n-1))); do chk[$i]=0; done
+  local sel=0 k rest box d allon
+  while true; do
+    header "$title"
+    printf '%s%s%s\n\n' "$C_DIM" "$(t multi_keys)" "$C_RESET"
+    for i in "${!_ml[@]}"; do
+      if [ "${chk[$i]}" = 1 ]; then box="[$C_GREEN✔$C_RESET]"; else box="[ ]"; fi
+      if [ "$i" -eq "$sel" ]; then printf '  %s▸%s %s %s\n' "$C_CYAN$C_B" "$C_RESET" "$box" "${_ml[$i]}"
+      else                          printf '    %s %s\n' "$box" "${_ml[$i]}"; fi
+    done
+    IFS= read -rsn1 k
+    case "$k" in
+      ' ') chk[$sel]=$(( 1 - chk[$sel] )) ;;
+      '')  for i in "${!chk[@]}"; do [ "${chk[$i]}" = 1 ] && MULTI_SEL+=("$i"); done
+           [ "${#MULTI_SEL[@]}" -gt 0 ] && MULTI_ACTION=ok || MULTI_ACTION=empty; return ;;
+      $'\x1b') read -rsn2 -t 0.05 rest 2>/dev/null
+        case "$rest" in
+          '[A') sel=$(( (sel-1+n)%n )) ;;
+          '[B') sel=$(( (sel+1)%n )) ;;
+          '[D'|'') MULTI_ACTION=cancel; return ;;
+        esac ;;
+      k|K) sel=$(( (sel-1+n)%n )) ;;
+      j|J) sel=$(( (sel+1)%n )) ;;
+      a|A) allon=1; for i in "${!chk[@]}"; do [ "${chk[$i]}" = 0 ] && allon=0; done
+           for i in "${!chk[@]}"; do chk[$i]=$(( 1 - allon )); done ;;
+      l|L) MULTI_ACTION=list; return ;;
+      q|Q) MULTI_ACTION=cancel; return ;;
+      [0-9]) d=$((10#$k))
+             if [ "$d" -eq 0 ]; then MULTI_ACTION=cancel; return
+             elif [ "$d" -ge 1 ] && [ "$d" -le "$n" ]; then sel=$((d-1)); chk[$sel]=$(( 1 - chk[$sel] )); fi ;;
+    esac
+  done
+}
+
 # --------------------------- Guards -------------------------------
 if [ "$(id -u)" -eq 0 ]; then
   load_lang
@@ -703,19 +866,17 @@ list_uninstall() {
 
 list_menu() {
   while true; do
-    header "$(t list_title)"
     if [ "${#LIST_NAMES[@]}" -eq 0 ]; then
+      header "$(t list_title)"
       warn "$(t list_empty_hint)"
       pause; return
     fi
-    list_show
-    printf '\n  %si)%s %s\n' "$C_B" "$C_RESET" "$(t list_install_all)"
-    printf '  %su)%s %s\n'   "$C_B" "$C_RESET" "$(t list_uninstall_all)"
-    printf '  %sq)%s %s\n'   "$C_B" "$C_RESET" "$(t list_remove)"
-    printf '  %sv)%s %s\n'   "$C_B" "$C_RESET" "$(t list_clear)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t choose)" op
-    case "$op" in
+    local keys=(i u q v 0) labels=(
+      "$(t list_install_all)" "$(t list_uninstall_all)" "$(t list_remove)" "$(t list_clear)" "$(t back)")
+    MENU_INFO="$(list_show)"
+    menu_pick "$(t list_title)" keys labels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       i|I) list_install; pause; [ "${#LIST_NAMES[@]}" -eq 0 ] && return ;;
       u|U) list_uninstall; pause; [ "${#LIST_NAMES[@]}" -eq 0 ] && return ;;
       q|Q)
@@ -874,70 +1035,41 @@ category_menu() {
   local label="$1"
   local -n _names="$2" _pkgs="$3"
   local -n _desc="${4}_${UI_LANG^^}"
-  local total=${#_names[@]}
   while true; do
-    header "$(t menu_install_apps) › $label"
-    local i
+    # Build the checkbox labels (name + description).
+    local -a mlabels=(); local i
     for i in "${!_names[@]}"; do
-      printf '  %s%2d)%s %-26s %s%s%s\n' \
-        "$C_B" "$((i+1))" "$C_RESET" "${_names[$i]}" "$C_DIM" "${_desc[$i]}" "$C_RESET"
+      mlabels+=("$(printf '%-26s %s%s%s' "${_names[$i]}" "$C_DIM" "${_desc[$i]}" "$C_RESET")")
     done
-    printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t install_all)"
-    printf '  %sL)%s %s\n' "$C_B" "$C_RESET" "$(printf "$(t view_list)" "${#LIST_NAMES[@]}")"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    menu_pick_multi "$(t menu_install_apps) › $label" mlabels
+    case "$MULTI_ACTION" in
+      cancel) return ;;
+      list)   list_menu; continue ;;
+      empty)  warn "$(t nothing_selected)"; pause; continue ;;
+    esac
 
-    local line; read -rp "$(t cat_prompt)" line
-    [ "$line" = "0" ] && return
-    [[ "$line" =~ ^[lL]$ ]] && { list_menu; continue; }
-    line=${line//,/ }
-
-    # Build the selection (names and packages in parallel, one entry per app).
+    # Gather the ticked apps.
     local -a sel_names=() sel_pkgs=()
-    if [[ "$line" =~ ^[aA]$ ]]; then
-      sel_names=("${_names[@]}")
-      sel_pkgs=("${_pkgs[@]}")
-    else
-      local n
-      for n in $line; do
-        if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "$total" ]; then
-          sel_names+=("${_names[$((n-1))]}")
-          sel_pkgs+=("${_pkgs[$((n-1))]}")
-        else
-          warn "$(printf "$(t ignored_value)" "$n")"
-        fi
-      done
-    fi
+    for i in "${MULTI_SEL[@]}"; do sel_names+=("${_names[$i]}"); sel_pkgs+=("${_pkgs[$i]}"); done
 
-    if [ "${#sel_pkgs[@]}" -eq 0 ]; then
-      warn "$(t nothing_selected)"; pause; continue
-    fi
-
-    # Install now, uninstall, or save to the list to act on together later?
-    # Clean screen showing only this info.
-    clear 2>/dev/null || true
-    printf '%s%s%s\n\n' "$C_B" "$(printf "$(t selected)" "${sel_names[*]}")" "$C_RESET"
-    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_install_now)"
-    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_add_list)"
-    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t opt_uninstall)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t cancel)"
-    local acc; read -rp "$(t what_to_do)" acc
-    clear 2>/dev/null || true
-    case "$acc" in
+    # Install now, add to the list, or uninstall?
+    MENU_INFO="$C_B$(printf "$(t selected)" "${sel_names[*]}")$C_RESET"
+    local keys=(1 2 3 0) labels=(
+      "$(t opt_install_now)" "$(t opt_add_list)" "$(t opt_uninstall)" "$(t cancel)")
+    menu_pick "$(t menu_install_apps) › $label" keys labels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       1)
         local -a flat=(); local e
         for e in "${sel_pkgs[@]}"; do flat+=($e); done
-        install_packages "${flat[@]}"
-        pause ;;
+        install_packages "${flat[@]}"; pause ;;
       2)
         local j
-        for j in "${!sel_pkgs[@]}"; do
-          list_add "${sel_names[$j]}" "${sel_pkgs[$j]}"
-        done ;;   # add: repaint the category menu
+        for j in "${!sel_pkgs[@]}"; do list_add "${sel_names[$j]}" "${sel_pkgs[$j]}"; done ;;
       3)
         local -a flat=(); local e
         for e in "${sel_pkgs[@]}"; do flat+=($e); done
-        uninstall_packages "${flat[@]}"
-        pause ;;
+        uninstall_packages "${flat[@]}"; pause ;;
       *) : ;;   # cancel: repaint the category menu
     esac
   done
@@ -945,14 +1077,10 @@ category_menu() {
 
 dev_individual_menu() {
   while true; do
-    header "$(t dev_ind_title)"
-    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_editors)"
-    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_languages)"
-    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_databases)"
-    printf '  %s4)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_tools)"
-    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t dev_choose_type)" op
-    case "$op" in
+    local keys=(1 2 3 4 0) labels=(
+      "$(t dev_editors)" "$(t dev_languages)" "$(t dev_databases)" "$(t dev_tools)" "$(t back)")
+    menu_pick "$(t dev_ind_title)" keys labels 0
+    case "$MENU_RESULT" in
       1) category_menu "$(t subcat_editors)"   EDITORS_NAMES EDITORS_PKGS EDITORS_DESC ;;
       2) category_menu "$(t subcat_languages)" LANGS_NAMES   LANGS_PKGS   LANGS_DESC ;;
       3) category_menu "$(t subcat_databases)" DB_NAMES      DB_PKGS      DB_DESC ;;
@@ -965,12 +1093,9 @@ dev_individual_menu() {
 
 dev_section() {
   while true; do
-    header "$(t dev_title)"
-    printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_packs)"
-    printf '  %s2)%s %s\n'   "$C_B" "$C_RESET" "$(t dev_individual)"
-    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t dev_choose_mode)" op
-    case "$op" in
+    local keys=(1 2 0) labels=("$(t dev_packs)" "$(t dev_individual)" "$(t back)")
+    menu_pick "$(t dev_title)" keys labels 0
+    case "$MENU_RESULT" in
       1) category_menu "$(t subcat_packs)" "PACKS_NAMES_${UI_LANG^^}" PACKS_PKGS PACKS_DESC ;;
       2) dev_individual_menu ;;
       0|"") return ;;
@@ -981,20 +1106,12 @@ dev_section() {
 
 apps_section() {
   while true; do
-    header "$(t menu_install_apps)"
-    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cat_development)"
-    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cat_games)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cat_multimedia)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cat_streaming)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cat_editing)"
-    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t cat_office)"
-    printf '  %s7)%s %s\n' "$C_B" "$C_RESET" "$(t cat_internet)"
-    printf '  %s8)%s %s\n' "$C_B" "$C_RESET" "$(t cat_system)"
-    printf '\n  %sL)%s %s\n' "$C_B" "$C_RESET" "$(printf "$(t list_menu)" "${#LIST_NAMES[@]}")"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-
-    local op; read -rp "$(t choose_category)" op
-    case "$op" in
+    local keys=(1 2 3 4 5 6 7 8 L 0) labels=(
+      "$(t cat_development)" "$(t cat_games)" "$(t cat_multimedia)" "$(t cat_streaming)"
+      "$(t cat_editing)" "$(t cat_office)" "$(t cat_internet)" "$(t cat_system)"
+      "$(printf "$(t list_menu)" "${#LIST_NAMES[@]}")" "$(t back)")
+    menu_pick "$(t menu_install_apps)" keys labels 0
+    case "$MENU_RESULT" in
       1) dev_section ;;
       2) category_menu "$(t cat_games)"      GAMES_NAMES  GAMES_PKGS  GAMES_DESC ;;
       3) category_menu "$(t cat_multimedia)" MEDIA_NAMES  MEDIA_PKGS  MEDIA_DESC ;;
@@ -1101,22 +1218,17 @@ choose_fnkeys() {
 
 config_section() {
   while true; do
-    header "$(t cfg_title)"
-    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_network)"
-    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_keyboard)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_mirrors)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_browser)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_maintenance)"
-    printf '\n  %sa)%s %s\n' "$C_B" "$C_RESET" "$(t cfg_apply_all)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-
-    local op; read -rp "$(t choose_category)" op
-    case "$op" in
+    local keys=(1 2 3 4 5 6 a 0) labels=(
+      "$(t cfg_network)" "$(t cfg_keyboard)" "$(t cfg_mirrors)" "$(t cfg_browser)"
+      "$(t cfg_maintenance)" "$(t cfg_nav)" "$(t cfg_apply_all)" "$(t back)")
+    menu_pick "$(t cfg_title)" keys labels 0
+    case "$MENU_RESULT" in
       1) fix_network_menu ;;
       2) fix_keyboard_menu ;;
       3) fix_mirrors_menu ;;
       4) config_browser_menu ;;
       5) fix_maintenance_menu ;;
+      6) choose_nav ;;
       a|A)
         if has_cachyos_fix; then
           confirm "$(t cfg_apply_all_confirm)" && run_fix all
@@ -1131,24 +1243,18 @@ config_section() {
 }
 
 fix_network_menu() {
-  header "$(t net_title)"
-  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t net_wifi)"
-  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-  local op; read -rp "$(t choose)" op
-  case "$op" in
+  local keys=(1 0) labels=("$(t net_wifi)" "$(t back)")
+  menu_pick "$(t net_title)" keys labels 0
+  case "$MENU_RESULT" in
     1) apply_fix wifi "$(t desc_wifi)" ;;
     *) : ;;
   esac
 }
 
 fix_keyboard_menu() {
-  header "$(t kbd_title)"
-  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_layout)"
-  printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_numlock)"
-  printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t kbd_fnkeys)"
-  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-  local op; read -rp "$(t choose)" op
-  case "$op" in
+  local keys=(1 2 3 0) labels=("$(t kbd_layout)" "$(t kbd_numlock)" "$(t kbd_fnkeys)" "$(t back)")
+  menu_pick "$(t kbd_title)" keys labels 0
+  case "$MENU_RESULT" in
     1)
       local lay; lay=$(choose_layout)
       if [ -z "$lay" ]; then warn "$(t kbd_no_layout)"; pause; return; fi
@@ -1166,25 +1272,19 @@ fix_keyboard_menu() {
 }
 
 fix_mirrors_menu() {
-  header "$(t mir_title)"
-  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t mir_refresh)"
-  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-  local op; read -rp "$(t choose)" op
-  case "$op" in
+  local keys=(1 0) labels=("$(t mir_refresh)" "$(t back)")
+  menu_pick "$(t mir_title)" keys labels 0
+  case "$MENU_RESULT" in
     1) apply_fix mirrors "$(t desc_mirrors)" ;;
     *) : ;;
   esac
 }
 
 fix_maintenance_menu() {
-  header "$(t maint_title)"
-  printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t maint_preupdate)"
-  printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t maint_update)"
-  printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t maint_repair)"
-  printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t maint_clean)"
-  printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-  local op; read -rp "$(t choose)" op
-  case "$op" in
+  local keys=(1 2 3 4 0) labels=(
+    "$(t maint_preupdate)" "$(t maint_update)" "$(t maint_repair)" "$(t maint_clean)" "$(t back)")
+  menu_pick "$(t maint_title)" keys labels 0
+  case "$MENU_RESULT" in
     1) apply_fix preupdate    "$(t desc_preupdate)" ;;
     2) apply_fix update       "$(t desc_update)" ;;
     3) apply_fix repair-boot  "$(t desc_repair)" ;;
@@ -1249,23 +1349,19 @@ install_app_undo() {
 
 install_app_menu() {
   while true; do
-    header "$(t ia_title)"
     local installed=0; app_is_installed && installed=1
+    local l_inst l_uninst
     if [ "$installed" -eq 1 ]; then
-      printf '%s%s%s\n\n' "$C_DIM" "$(t ia_status_installed)" "$C_RESET"
-      # Install dimmed (already installed), Uninstall active.
-      printf '  %s1) %s%s\n'  "$C_DIM" "$(t ia_install)" "$C_RESET"
-      printf '  %s2)%s %s\n'  "$C_B" "$C_RESET" "$(t ia_uninstall)"
+      l_inst="$C_DIM$(t ia_install)$C_RESET"; l_uninst="$(t ia_uninstall)"
+      MENU_INFO="$C_DIM$(t ia_status_installed)$C_RESET"
     else
-      printf '%s%s%s\n\n' "$C_DIM" "$(t ia_status_not)" "$C_RESET"
-      # Install active, Uninstall dimmed (nothing installed).
-      printf '  %s1)%s %s\n'  "$C_B" "$C_RESET" "$(t ia_install)"
-      printf '  %s2) %s%s\n'  "$C_DIM" "$(t ia_uninstall)" "$C_RESET"
+      l_inst="$(t ia_install)"; l_uninst="$C_DIM$(t ia_uninstall)$C_RESET"
+      MENU_INFO="$C_DIM$(t ia_status_not)$C_RESET"
     fi
-    printf '  %s3)%s %s\n'   "$C_B" "$C_RESET" "$(t ia_check_updates)"
-    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t choose)" op
-    case "$op" in
+    local keys=(1 2 3 0) labels=("$l_inst" "$l_uninst" "$(t ia_check_updates)" "$(t back)")
+    menu_pick "$(t ia_title)" keys labels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       1) if [ "$installed" -eq 1 ]; then warn "$(t ia_already)"; pause
          else install_app_do; pause; fi ;;
       2) if [ "$installed" -eq 1 ]; then install_app_undo; pause
@@ -1329,33 +1425,31 @@ config_browser_menu() {
     ids+=("$id"); names+=("$name")
   done < <(detect_browsers | sort -t$'\t' -k2 -f)
 
+  if [ "${#ids[@]}" -eq 0 ]; then
+    header "$(t browser_title)"; warn "$(t browser_none_found)"; pause; return
+  fi
   while true; do
-    header "$(t browser_title)"
     local cur; cur=$(xdg-settings get default-web-browser 2>/dev/null)
     if [ -n "$cur" ]; then
-      printf '%s%s%s\n\n' "$C_DIM" "$(printf "$(t browser_current)" "$(browser_name "$cur")")" "$C_RESET"
+      MENU_INFO="$C_DIM$(printf "$(t browser_current)" "$(browser_name "$cur")")$C_RESET"
     else
-      printf '%s%s%s\n\n' "$C_DIM" "$(t browser_current_none)" "$C_RESET"
+      MENU_INFO="$C_DIM$(t browser_current_none)$C_RESET"
     fi
-
-    if [ "${#ids[@]}" -eq 0 ]; then
-      warn "$(t browser_none_found)"; pause; return
-    fi
-    local i
+    local -a mkeys=() mlabels=(); local i
     for i in "${!ids[@]}"; do
-      printf '  %s%2d)%s %-24s %s%s%s\n' \
-        "$C_B" "$((i+1))" "$C_RESET" "${names[$i]}" "$C_DIM" "${ids[$i]}" "$C_RESET"
+      mkeys+=("$((i+1))")
+      mlabels+=("$(printf '%-24s %s%s%s' "${names[$i]}" "$C_DIM" "${ids[$i]}" "$C_RESET")")
     done
-    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-
-    local op; read -rp "$(t browser_choose)" op
-    case "$op" in
+    mkeys+=(0); mlabels+=("$(t back)")
+    menu_pick "$(t browser_title)" mkeys mlabels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       0|"") return ;;
       *)
-        if [[ "$op" =~ ^[0-9]+$ ]] && [ "$op" -ge 1 ] && [ "$op" -le "${#ids[@]}" ]; then
-          local sel="${ids[$((op-1))]}"
+        if [[ "$MENU_RESULT" =~ ^[0-9]+$ ]] && [ "$MENU_RESULT" -ge 1 ] && [ "$MENU_RESULT" -le "${#ids[@]}" ]; then
+          local sel="${ids[$((MENU_RESULT-1))]}"
           if xdg-settings set default-web-browser "$sel" 2>/dev/null; then
-            ok "$(printf "$(t browser_set_ok)" "${names[$((op-1))]}")"
+            ok "$(printf "$(t browser_set_ok)" "${names[$((MENU_RESULT-1))]}")"
           else
             err "$(t browser_set_fail)"
           fi
@@ -1660,20 +1754,16 @@ svc_disable_generic() { # $1 = scope ; $2 = unit
 # Action menu for a single unit (system service or user/app unit).
 service_actions() { # $1 = scope ; $2 = unit ; $3 = label
   local scope="$1" unit="$2" label="$3"
+  local keys=(1 2 3 4 5 6 r 0)
   while true; do
-    header "$(t svc_title)"
-    printf '%s%s%s\n' "$C_B" "$(printf "$(t svc_actions_title)" "$label")" "$C_RESET"
-    printf '   %s\n\n' "$(svc_badges "$scope" "$unit")"
-    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t svc_start)"
-    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t svc_stop)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t svc_restart)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t svc_enable)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t svc_disable)"
-    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t svc_view_status)"
-    printf '\n  %sr)%s %s\n' "$C_B" "$C_RESET" "$(t svc_refresh)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t choose)" op
-    case "$op" in
+    local labels=(
+      "$(t svc_start)" "$(t svc_stop)" "$(t svc_restart)" "$(t svc_enable)"
+      "$(t svc_disable)" "$(t svc_view_status)" "$(t svc_refresh)" "$(t back)")
+    MENU_INFO="$C_B$(printf "$(t svc_actions_title)" "$label")$C_RESET
+   $(svc_badges "$scope" "$unit")"
+    menu_pick "$(t svc_title)" keys labels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       1) svc_start_generic "$scope" "$unit" ;;
       2) svc_run "$scope" "$unit" stop ;;
       3) svc_run "$scope" "$unit" restart ;;
@@ -1711,20 +1801,16 @@ xampp_enable() {
 # Action menu for XAMPP: on/off/restart via its script, autostart via systemd.
 xampp_actions() { # $1 = label
   local label="$1"
+  local keys=(1 2 3 4 5 6 r 0)
   while true; do
-    header "$(t svc_title)"
-    printf '%s%s%s\n' "$C_B" "$(printf "$(t svc_actions_title)" "$label")" "$C_RESET"
-    printf '   %s\n\n' "$(xampp_badges)"
-    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t svc_start)"
-    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t svc_stop)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t svc_restart)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t svc_enable)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t svc_disable)"
-    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t svc_view_status)"
-    printf '\n  %sr)%s %s\n' "$C_B" "$C_RESET" "$(t svc_refresh)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
-    local op; read -rp "$(t choose)" op
-    case "$op" in
+    local labels=(
+      "$(t svc_start)" "$(t svc_stop)" "$(t svc_restart)" "$(t svc_enable)"
+      "$(t svc_disable)" "$(t svc_view_status)" "$(t svc_refresh)" "$(t back)")
+    MENU_INFO="$C_B$(printf "$(t svc_actions_title)" "$label")$C_RESET
+   $(xampp_badges)"
+    menu_pick "$(t svc_title)" keys labels 0
+    MENU_INFO=""
+    case "$MENU_RESULT" in
       1) svc_run_xampp start ;;
       2) svc_run_xampp stop ;;
       3) svc_run_xampp restart ;;
@@ -1742,10 +1828,6 @@ xampp_actions() { # $1 = label
 services_section() {
   local filter="apps"   # default: show the apps launched this session
   while true; do
-    header "$(t svc_title)"
-    printf '%s%s%s\n\n' "$C_DIM" \
-      "$(printf "$(t svc_filter_label)" "$(svc_filter_name "$filter")")" "$C_RESET"
-
     local scope; scope="$(svc_filter_scope "$filter")"
     svc_load_states "$scope"   # one bulk read of this manager's states, for fast painting
 
@@ -1773,27 +1855,23 @@ services_section() {
       fi
     done < <(svc_list_units "$filter")
 
-    if [ "${#units[@]}" -eq 0 ]; then
-      warn "$(t svc_none_in_filter)"
-    else
-      local i badge
-      for i in "${!units[@]}"; do
-        if [ "${units[$i]}" = xampp ]; then
-          badge="$(xampp_badges)"
-        else
-          badge="$(svc_badges_row "${units[$i]}")"
-        fi
-        printf '  %s%3d)%s %-34s %s\n' "$C_B" "$((i+1))" "$C_RESET" "${labels[$i]}" "$badge"
-      done
-    fi
+    # Build the menu: numbered services (with badges) + action keys.
+    local -a mkeys=() mlabels=(); local i badge
+    for i in "${!units[@]}"; do
+      if [ "${units[$i]}" = xampp ]; then badge="$(xampp_badges)"; else badge="$(svc_badges_row "${units[$i]}")"; fi
+      mkeys+=("$((i+1))")
+      mlabels+=("$(printf '%-34s %s' "${labels[$i]}" "$badge")")
+    done
+    mkeys+=(f r n 0)
+    mlabels+=("$(t svc_change_filter)" "$(t svc_refresh)" "$(t svc_other_unit)" "$(t back)")
 
-    printf '\n  %sf)%s %s\n' "$C_B" "$C_RESET" "$(t svc_change_filter)"
-    printf '  %sr)%s %s\n'   "$C_B" "$C_RESET" "$(t svc_refresh)"
-    printf '  %sn)%s %s\n'   "$C_B" "$C_RESET" "$(t svc_other_unit)"
-    printf '  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t back)"
+    MENU_INFO="$C_DIM$(printf "$(t svc_filter_label)" "$(svc_filter_name "$filter")")$C_RESET"
+    [ "${#units[@]}" -eq 0 ] && MENU_INFO="$MENU_INFO
+   $C_YELLOW!$C_RESET $(t svc_none_in_filter)"
+    menu_pick "$(t svc_title)" mkeys mlabels 0
+    MENU_INFO=""
 
-    local op; read -rp "$(t svc_choose)" op
-    case "$op" in
+    case "$MENU_RESULT" in
       0|"") return ;;
       f|F) filter="$(svc_next_filter "$filter")" ;;
       r|R) : ;;   # re-loop: reloads states and repaints
@@ -1806,8 +1884,8 @@ services_section() {
           warn "$(t svc_not_available)"; pause
         fi ;;
       *)
-        if [[ "$op" =~ ^[0-9]+$ ]] && [ "$op" -ge 1 ] && [ "$op" -le "${#units[@]}" ]; then
-          local sel_unit="${units[$((op-1))]}" sel_label="${labels[$((op-1))]}"
+        if [[ "$MENU_RESULT" =~ ^[0-9]+$ ]] && [ "$MENU_RESULT" -ge 1 ] && [ "$MENU_RESULT" -le "${#units[@]}" ]; then
+          local sel_unit="${units[$((MENU_RESULT-1))]}" sel_label="${labels[$((MENU_RESULT-1))]}"
           if [ "$sel_unit" = xampp ]; then
             xampp_actions "$sel_label"
           else
@@ -1842,22 +1920,42 @@ choose_language() {
   pause
 }
 
+# First-run navigation-mode chooser (classic prompt: the mode isn't set yet).
+choose_nav_firstrun() {
+  header "$(t nav_title)"
+  printf '%s%s%s\n\n' "$C_DIM" "$(t nav_intro)" "$C_RESET"
+  printf '  %s1)%s %s\n'   "$C_B" "$C_RESET" "$(t nav_opt_arrows)"
+  printf '  %s2)%s %s\n\n' "$C_B" "$C_RESET" "$(t nav_opt_numbers)"
+  local sel; read -rp "$(t nav_prompt)" sel
+  case "${sel:-1}" in 2) NAV_MODE=numbers ;; *) NAV_MODE=arrows ;; esac
+  save_nav
+  ok "$(printf "$(t nav_saved)" "$NAV_MODE")"
+  pause
+}
+
+# Navigation-mode setting (from Configuration).
+choose_nav() {
+  local keys=(1 2 0) labels=("$(t nav_opt_arrows)" "$(t nav_opt_numbers)" "$(t back)")
+  MENU_INFO="$C_DIM$(printf "$(t nav_saved)" "$NAV_MODE")$C_RESET"
+  menu_pick "$(t nav_title)" keys labels 0
+  MENU_INFO=""
+  case "$MENU_RESULT" in
+    1) NAV_MODE=arrows;  save_nav; ok "$(printf "$(t nav_saved)" "$NAV_MODE")"; pause ;;
+    2) NAV_MODE=numbers; save_nav; ok "$(printf "$(t nav_saved)" "$NAV_MODE")"; pause ;;
+    *) : ;;
+  esac
+}
+
 # ==================================================================
 #  MAIN MENU
 # ==================================================================
 main_menu() {
   while true; do
-    header "$(printf "$(t main_pkgmgr)" "$(detect_helper)")"
-    printf '  %s1)%s %s\n' "$C_B" "$C_RESET" "$(t main_install)"
-    printf '  %s2)%s %s\n' "$C_B" "$C_RESET" "$(t main_config)"
-    printf '  %s3)%s %s\n' "$C_B" "$C_RESET" "$(t main_services)"
-    printf '  %s4)%s %s\n' "$C_B" "$C_RESET" "$(t main_status)"
-    printf '  %s5)%s %s\n' "$C_B" "$C_RESET" "$(t main_install_app)"
-    printf '  %s6)%s %s\n' "$C_B" "$C_RESET" "$(t main_language)"
-    printf '\n  %s0)%s %s\n\n' "$C_B" "$C_RESET" "$(t exit)"
-
-    local op; read -rp "$(t main_choose)" op
-    case "$op" in
+    local keys=(1 2 3 4 5 6 0) labels=(
+      "$(t main_install)" "$(t main_config)" "$(t main_services)"
+      "$(t main_status)" "$(t main_install_app)" "$(t main_language)" "$(t exit)")
+    menu_pick "$(printf "$(t main_pkgmgr)" "$(detect_helper)")" keys labels 0
+    case "$MENU_RESULT" in
       1) apps_section ;;
       2) config_section ;;
       3) services_section ;;
@@ -1930,7 +2028,9 @@ run_update_check() {
 
 # ---------------------------- Startup -----------------------------
 load_lang
-# First run (no env override, no saved choice): ask once and remember it.
-[ "$LANG_SOURCE" = default ] && choose_language
+load_nav
+# First run (no saved choice): a tiny setup wizard — language, then nav mode.
+if [ "$LANG_SOURCE" = default ]; then choose_language; fi
+[ "$NAV_SOURCE" = default ] && [ -z "${CACHYOS_NAV:-}" ] && choose_nav_firstrun
 run_update_check auto
 main_menu
