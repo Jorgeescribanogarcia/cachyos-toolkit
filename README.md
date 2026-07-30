@@ -1,5 +1,7 @@
 # CachyOS Toolkit
 
+**English** · [Español](README.es.md) · [Advanced docs](docs/en/) · [Documentación avanzada](docs/es/)
+
 Configuration tools for CachyOS. Portable: uses relative paths (`$HOME`,
 `/etc`) and doesn't depend on any specific machine.
 
