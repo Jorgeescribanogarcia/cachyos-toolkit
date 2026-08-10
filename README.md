@@ -24,7 +24,9 @@ Sections:
 - **Install applications** — by category. Prefers **CachyOS-optimized**
   packages (`x86-64-v3/v4` repos; for gaming it uses `cachyos-gaming-meta`,
   `wine-cachyos`, `proton-cachyos`).
-  - *Games* (complete).
+  - *Games* — split into **Games** (actual games), **Platforms and stores**
+    (Steam, Heroic/Epic/GOG, Lutris, Bottles) and **Tools and performance**
+    (Proton, Wine, GameMode, MangoHud…).
   - *Development*: complete **Packs** by stack (Web, Java, Rust, Python, Go,
     C/C++, .NET, Containers, XAMPP) and **individual install** by type
     (Editors/IDEs, Languages, Databases, Tools/DevOps).

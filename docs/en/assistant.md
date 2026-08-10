@@ -159,6 +159,23 @@ Global parallel arrays `LIST_NAMES` / `LIST_PKGS` hold a cross-category selectio
 - **Signature:** `dev_section` — Development menu: Packs (a `category_menu` over
   `PACKS_*`) or Individual (`dev_individual_menu`).
 
+### `games_section`
+- **Signature:** `games_section` — Games submenu with three subcategories, each a
+  `category_menu`: **Games** (actual games, `GAMES_*`), **Platforms and stores**
+  (multi-game launchers/stores like Steam/Heroic/Lutris, `STORES_*`) and **Tools
+  and performance** (Proton/Wine/GameMode/MangoHud…, `GTOOLS_*`). Single-game
+  launchers (e.g. Minecraft via Prism Launcher) live under **Games**, not stores.
+  A fourth entry runs `install_hytale`.
+
+### `install_hytale`
+- **Signature:** `install_hytale`
+- **What it does:** special-case installer for Hytale's Linux launcher, which is
+  a downloaded Flatpak bundle (from hytale.com), not a repo/AUR package. Ensures
+  `flatpak` is installed, locates `hytale-launcher*.flatpak` in the Downloads
+  folder (`xdg-user-dir DOWNLOAD`, with fallbacks; otherwise offers to open
+  hytale.com and asks for the path), and installs it with
+  `flatpak --user install`.
+
 ### `apps_section`
 - **Signature:** `apps_section`
 - **What it does:** the top-level "Install applications" menu: the eight

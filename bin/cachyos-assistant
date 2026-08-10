@@ -138,6 +138,22 @@ MSG_EN[menu_install_apps]="Install applications"
 MSG_EN[back]="Back"
 MSG_EN[cat_development]="Development"
 MSG_EN[cat_games]="Games"
+MSG_EN[g_games]="Games (actual games)"
+MSG_EN[g_stores]="Platforms and stores"
+MSG_EN[g_tools]="Tools and performance"
+MSG_EN[g_hytale]="Hytale (launcher — Flatpak)"
+MSG_EN[hy_title]="Games › Hytale"
+MSG_EN[hy_need_flatpak]="Hytale's Linux launcher is a Flatpak, but 'flatpak' is not installed."
+MSG_EN[hy_install_flatpak]="Install 'flatpak' now?"
+MSG_EN[hy_flatpak_fail]="Could not install flatpak."
+MSG_EN[hy_download]="Download the launcher (.flatpak) from hytale.com into your Downloads folder, then run this again."
+MSG_EN[hy_open_page]="Open hytale.com in the browser now?"
+MSG_EN[hy_path_prompt]="Or type the path to the .flatpak (empty = cancel): "
+MSG_EN[hy_not_found]="That file does not exist."
+MSG_EN[hy_found]="Found: %s"
+MSG_EN[hy_installing]="Installing the Hytale launcher (flatpak --user install)…"
+MSG_EN[hy_done]="Hytale launcher installed. Launch it from the app menu."
+MSG_EN[hy_fail]="Installation failed (see the output above)."
 MSG_EN[cat_multimedia]="Multimedia"
 MSG_EN[cat_streaming]="Streaming and VTubing"
 MSG_EN[cat_editing]="Editing (video, photo, audio)"
@@ -367,6 +383,22 @@ MSG_ES[menu_install_apps]="Instalar aplicaciones"
 MSG_ES[back]="Volver"
 MSG_ES[cat_development]="Desarrollo"
 MSG_ES[cat_games]="Juegos"
+MSG_ES[g_games]="Juegos (juegos en sí)"
+MSG_ES[g_stores]="Plataformas y tiendas"
+MSG_ES[g_tools]="Herramientas y rendimiento"
+MSG_ES[g_hytale]="Hytale (launcher — Flatpak)"
+MSG_ES[hy_title]="Juegos › Hytale"
+MSG_ES[hy_need_flatpak]="El launcher de Hytale para Linux es un Flatpak, pero 'flatpak' no está instalado."
+MSG_ES[hy_install_flatpak]="¿Instalar 'flatpak' ahora?"
+MSG_ES[hy_flatpak_fail]="No se pudo instalar flatpak."
+MSG_ES[hy_download]="Descarga el launcher (.flatpak) de hytale.com en tu carpeta de Descargas, y vuelve a ejecutar esto."
+MSG_ES[hy_open_page]="¿Abrir hytale.com en el navegador ahora?"
+MSG_ES[hy_path_prompt]="O escribe la ruta al .flatpak (vacío = cancelar): "
+MSG_ES[hy_not_found]="Ese fichero no existe."
+MSG_ES[hy_found]="Encontrado: %s"
+MSG_ES[hy_installing]="Instalando el launcher de Hytale (flatpak --user install)…"
+MSG_ES[hy_done]="Launcher de Hytale instalado. Ábrelo desde el menú de aplicaciones."
+MSG_ES[hy_fail]="La instalación falló (mira la salida de arriba)."
 MSG_ES[cat_multimedia]="Multimedia"
 MSG_ES[cat_streaming]="Streaming y VTubing"
 MSG_ES[cat_editing]="Edición (vídeo, foto, audio)"
@@ -903,35 +935,42 @@ list_menu() {
 # NAMES and PKGS arrays are language-neutral (proper nouns / package ids).
 # DESC arrays come in _EN and _ES variants, picked by UI_LANG at runtime.
 
-# ----------------------------- Games ------------------------------
+# ------------------- Games: GAMES (actual games) ------------------
+# Popular, well-known titles installable from the repos/AUR.
 GAMES_NAMES=(
-  "Meta Gaming CachyOS" "Steam" "Lutris" "Heroic Games Launcher" "Bottles"
-  "ProtonUp-Qt" "Proton (CachyOS)" "Wine (CachyOS)" "Winetricks" "GameMode"
-  "MangoHud" "GOverlay" "vkBasalt" "Prism Launcher (Minecraft)" "Discord"
+  "Minecraft (Prism Launcher)" "0 A.D." "SuperTuxKart" "Xonotic" "The Battle for Wesnoth"
+  "Luanti (Minetest)" "OpenTTD" "osu!" "Veloren" "DDNet" "Teeworlds"
 )
 GAMES_PKGS=(
-  "cachyos-gaming-meta" "steam" "lutris" "heroic-games-launcher-bin" "bottles"
-  "protonup-qt" "proton-cachyos" "wine-cachyos" "winetricks" "gamemode lib32-gamemode"
-  "mangohud lib32-mangohud" "goverlay" "vkbasalt lib32-vkbasalt" "prismlauncher" "discord"
+  "prismlauncher" "0ad" "supertuxkart" "xonotic" "wesnoth"
+  "luanti" "openttd" "osu-lazer-bin" "veloren-bin" "ddnet" "teeworlds"
 )
 GAMES_DESC_EN=(
-  "CachyOS-optimized gaming stack (recommended)" "Valve's gaming platform"
-  "Game manager (GOG, Epic, emulators…)" "Client for Epic Games and GOG"
-  "Run Windows software in isolated environments" "Manage Proton-GE / Wine-GE versions"
-  "CachyOS-optimized Proton" "CachyOS-optimized Wine" "Installs common Wine dependencies"
-  "Optimizes the system while gaming (Feral)" "In-game FPS/temperature overlay"
-  "GUI to configure MangoHud" "Post-processing (sharpen, etc.) for Vulkan"
-  "Minecraft launcher" "Voice/text chat for gaming"
+  "Minecraft (via Prism Launcher; needs a Mojang account)" "Real-time strategy (Age of Empires-like)" "Kart racing" "Fast arena FPS"
+  "Turn-based fantasy strategy" "Voxel sandbox (Minecraft-like)"
+  "Transport/business sim (Transport Tycoon)" "Rhythm game (AUR)"
+  "Open-world voxel RPG (AUR)" "Fast online platform shooter (AUR)"
+  "Retro multiplayer platform shooter"
 )
 GAMES_DESC_ES=(
-  "Stack de juego optimizado por CachyOS (recomendado)" "Plataforma de juegos de Valve"
-  "Gestor de juegos (GOG, Epic, emuladores…)" "Cliente para Epic Games y GOG"
-  "Ejecuta software Windows en entornos aislados" "Gestiona versiones de Proton-GE / Wine-GE"
-  "Proton optimizado por CachyOS" "Wine optimizado por CachyOS" "Instala dependencias comunes de Wine"
-  "Optimiza el sistema durante el juego (Feral)" "Overlay de FPS/temperaturas en juego"
-  "Interfaz gráfica para configurar MangoHud" "Post-procesado (sharpen, etc.) para Vulkan"
-  "Lanzador de Minecraft" "Chat de voz/texto para jugar"
+  "Minecraft (vía Prism Launcher; necesita cuenta de Mojang)" "Estrategia en tiempo real (tipo Age of Empires)" "Carreras de karts" "FPS de arena rápido"
+  "Estrategia por turnos de fantasía" "Sandbox de vóxeles (tipo Minecraft)"
+  "Simulador de transporte/negocios (Transport Tycoon)" "Juego de ritmo (AUR)"
+  "RPG de mundo abierto por vóxeles (AUR)" "Shooter de plataformas online trepidante (AUR)"
+  "Shooter de plataformas multijugador retro"
 )
+
+# ------------- Games: STORES (platforms and launchers) ------------
+STORES_NAMES=( "Meta Gaming CachyOS" "Steam" "Heroic Games Launcher" "Lutris" "Bottles" )
+STORES_PKGS=( "cachyos-gaming-meta" "steam" "heroic-games-launcher-bin" "lutris" "bottles" )
+STORES_DESC_EN=( "CachyOS-optimized gaming stack (recommended)" "Valve's gaming platform (Steam store)" "Multi-store client: Epic Games and GOG" "Multi-source game manager (GOG, Epic, emulators…)" "Run Windows software/games in isolated environments" )
+STORES_DESC_ES=( "Stack de juego optimizado por CachyOS (recomendado)" "Plataforma de juegos de Valve (tienda Steam)" "Cliente multi-tienda: Epic Games y GOG" "Gestor multi-fuente de juegos (GOG, Epic, emuladores…)" "Ejecuta software/juegos de Windows en entornos aislados" )
+
+# ------------- Games: GTOOLS (tools and performance) --------------
+GTOOLS_NAMES=( "ProtonUp-Qt" "Proton (CachyOS)" "Wine (CachyOS)" "Winetricks" "GameMode" "MangoHud" "GOverlay" "vkBasalt" )
+GTOOLS_PKGS=( "protonup-qt" "proton-cachyos" "wine-cachyos" "winetricks" "gamemode lib32-gamemode" "mangohud lib32-mangohud" "goverlay" "vkbasalt lib32-vkbasalt" )
+GTOOLS_DESC_EN=( "Manage Proton-GE / Wine-GE versions" "CachyOS-optimized Proton" "CachyOS-optimized Wine" "Installs common Wine dependencies" "Optimizes the system while gaming (Feral)" "In-game FPS/temperature overlay" "GUI to configure MangoHud" "Post-processing (sharpen, etc.) for Vulkan" )
+GTOOLS_DESC_ES=( "Gestiona versiones de Proton-GE / Wine-GE" "Proton optimizado por CachyOS" "Wine optimizado por CachyOS" "Instala dependencias comunes de Wine" "Optimiza el sistema durante el juego (Feral)" "Overlay de FPS/temperaturas en juego" "Interfaz gráfica para configurar MangoHud" "Post-procesado (sharpen, etc.) para Vulkan" )
 
 # ------------------ Development: PACKS by stack -------------------
 # Pack names are descriptive, so they are translated too.
@@ -1001,10 +1040,10 @@ STREAM_DESC_ES=( "Grabación y streaming" "Cliente de itch.io — instala veadot
 # ----------------------------- Editing ----------------------------
 # Video, photo and audio editing (free tools). DaVinci Resolve is the pro
 # option; the rest are open-source editors moved here from Multimedia.
-EDIT_NAMES=( "DaVinci Resolve" "Kdenlive" "Shotcut" "OpenShot" "Flowblade" "Olive" "HandBrake" "LosslessCut" "Blender" "GIMP" "Krita" "Inkscape" "Pinta" "darktable" "Audacity" )
-EDIT_PKGS=( "davinci-resolve" "kdenlive" "shotcut" "openshot" "flowblade" "olive" "handbrake" "losslesscut-bin" "blender" "gimp" "krita" "inkscape" "pinta" "darktable" "audacity" )
-EDIT_DESC_EN=( "Pro video editing and color grading (AUR)" "Video editor (KDE)" "Simple video editor" "Simple video editor (AUR)" "Video editor" "Video editor / NLE (AUR)" "Video converter/compressor" "Lossless video cut/trim (AUR)" "3D modeling and rendering" "Image editor" "Digital painting" "Vector graphics" "Simple image editor (Paint.NET-like)" "RAW photo development" "Audio editor" )
-EDIT_DESC_ES=( "Edición de vídeo y etalonaje profesional (AUR)" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Editor de vídeo sencillo (AUR)" "Editor de vídeo" "Editor de vídeo / NLE (AUR)" "Conversor/compresor de vídeo" "Corte/recorte de vídeo sin recodificar (AUR)" "Modelado y render 3D" "Editor de imágenes" "Pintura digital" "Gráficos vectoriales" "Editor de imágenes sencillo (alternativa a Paint.NET)" "Revelado RAW de fotos" "Editor de audio" )
+EDIT_NAMES=( "DaVinci Resolve" "Kdenlive" "Shotcut" "OpenShot" "Flowblade" "Olive" "HandBrake" "LosslessCut" "Blender" "Blockbench" "GIMP" "Krita" "Inkscape" "Pinta" "darktable" "Audacity" )
+EDIT_PKGS=( "davinci-resolve" "kdenlive" "shotcut" "openshot" "flowblade" "olive" "handbrake" "losslesscut-bin" "blender" "blockbench-bin" "gimp" "krita" "inkscape" "pinta" "darktable" "audacity" )
+EDIT_DESC_EN=( "Pro video editing and color grading (AUR)" "Video editor (KDE)" "Simple video editor" "Simple video editor (AUR)" "Video editor" "Video editor / NLE (AUR)" "Video converter/compressor" "Lossless video cut/trim (AUR)" "3D modeling and rendering" "Low-poly / Minecraft model editor (AUR)" "Image editor" "Digital painting" "Vector graphics" "Simple image editor (Paint.NET-like)" "RAW photo development" "Audio editor" )
+EDIT_DESC_ES=( "Edición de vídeo y etalonaje profesional (AUR)" "Editor de vídeo (KDE)" "Editor de vídeo sencillo" "Editor de vídeo sencillo (AUR)" "Editor de vídeo" "Editor de vídeo / NLE (AUR)" "Conversor/compresor de vídeo" "Corte/recorte de vídeo sin recodificar (AUR)" "Modelado y render 3D" "Editor de modelos low-poly / Minecraft (AUR)" "Editor de imágenes" "Pintura digital" "Gráficos vectoriales" "Editor de imágenes sencillo (alternativa a Paint.NET)" "Revelado RAW de fotos" "Editor de audio" )
 
 # ----------------------------- Office -----------------------------
 OFFICE_NAMES=( "LibreOffice" "OnlyOffice" "WPS Office" "Obsidian" "Joplin" "Thunderbird" "Okular" "Xournal++" "Calibre" "Logseq" )
@@ -1104,6 +1143,59 @@ dev_section() {
   done
 }
 
+# Hytale's Linux launcher is a downloaded Flatpak bundle (from hytale.com), not
+# a repo/AUR package — so it gets its own small special-case installer.
+install_hytale() {
+  header "$(t hy_title)"
+
+  # 1) flatpak must be present
+  if ! command -v flatpak >/dev/null 2>&1; then
+    warn "$(t hy_need_flatpak)"
+    if confirm "$(t hy_install_flatpak)"; then
+      sudo pacman -S --needed --noconfirm flatpak || { err "$(t hy_flatpak_fail)"; pause; return; }
+    else
+      pause; return
+    fi
+  fi
+
+  # 2) locate the downloaded .flatpak (localized Downloads dir + common names)
+  local dl; dl=$(xdg-user-dir DOWNLOAD 2>/dev/null); [ -n "$dl" ] || dl="$HOME/Downloads"
+  local f="" cand
+  for cand in "$dl"/hytale-launcher*.flatpak "$HOME/Downloads"/hytale-launcher*.flatpak "$HOME/Descargas"/hytale-launcher*.flatpak; do
+    [ -f "$cand" ] && { f="$cand"; break; }
+  done
+  if [ -z "$f" ]; then
+    warn "$(t hy_download)"
+    confirm "$(t hy_open_page)" && { xdg-open https://hytale.com/ >/dev/null 2>&1 & }
+    local p; read -rp "$(t hy_path_prompt)" p
+    [ -z "$p" ] && { pause; return; }
+    f="${p/#\~/$HOME}"
+  fi
+  if [ ! -f "$f" ]; then err "$(t hy_not_found)"; pause; return; fi
+  ok "$(printf "$(t hy_found)" "$f")"
+
+  # 3) install the bundle for the current user
+  printf '\n%s%s%s\n' "$C_DIM" "$(t hy_installing)" "$C_RESET"
+  if flatpak --user install -y "$f"; then ok "$(t hy_done)"; else err "$(t hy_fail)"; fi
+  pause
+}
+
+games_section() {
+  while true; do
+    local keys=(1 2 3 4 0) labels=(
+      "$(t g_games)" "$(t g_stores)" "$(t g_tools)" "$(t g_hytale)" "$(t back)")
+    menu_pick "$(t cat_games)" keys labels 0
+    case "$MENU_RESULT" in
+      1) category_menu "$(t cat_games) › $(t g_games)"  GAMES_NAMES  GAMES_PKGS  GAMES_DESC ;;
+      2) category_menu "$(t cat_games) › $(t g_stores)" STORES_NAMES STORES_PKGS STORES_DESC ;;
+      3) category_menu "$(t cat_games) › $(t g_tools)"  GTOOLS_NAMES GTOOLS_PKGS GTOOLS_DESC ;;
+      4) install_hytale ;;
+      0|"") return ;;
+      *) warn "$(t invalid_option)"; pause ;;
+    esac
+  done
+}
+
 apps_section() {
   while true; do
     local keys=(1 2 3 4 5 6 7 8 L 0) labels=(
@@ -1113,7 +1205,7 @@ apps_section() {
     menu_pick "$(t menu_install_apps)" keys labels 0
     case "$MENU_RESULT" in
       1) dev_section ;;
-      2) category_menu "$(t cat_games)"      GAMES_NAMES  GAMES_PKGS  GAMES_DESC ;;
+      2) games_section ;;
       3) category_menu "$(t cat_multimedia)" MEDIA_NAMES  MEDIA_PKGS  MEDIA_DESC ;;
       4) category_menu "$(t cat_streaming)"  STREAM_NAMES STREAM_PKGS STREAM_DESC ;;
       5) category_menu "$(t cat_editing)"    EDIT_NAMES   EDIT_PKGS   EDIT_DESC ;;

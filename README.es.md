@@ -25,7 +25,9 @@ Secciones:
 - **Instalar aplicaciones** — por categoría. Prefiere los paquetes
   **optimizados para CachyOS** (repos `x86-64-v3/v4`; para juegos usa
   `cachyos-gaming-meta`, `wine-cachyos`, `proton-cachyos`).
-  - *Juegos* (completo).
+  - *Juegos* — dividido en **Juegos** (juegos en sí), **Plataformas y tiendas**
+    (Steam, Heroic/Epic/GOG, Lutris, Bottles) y **Herramientas y rendimiento**
+    (Proton, Wine, GameMode, MangoHud…).
   - *Desarrollo*: **Packs** completos por stack (Web, Java, Rust, Python, Go,
     C/C++, .NET, Contenedores, XAMPP) e **instalación individual** por tipo
     (Editores/IDEs, Lenguajes, Bases de datos, Herramientas/DevOps).

@@ -163,6 +163,23 @@ entre categorías.
 - **Firma:** `dev_section` — menú de Desarrollo: Packs (un `category_menu` sobre
   `PACKS_*`) o Individual (`dev_individual_menu`).
 
+### `games_section`
+- **Firma:** `games_section` — submenú de Juegos con tres subcategorías, cada una
+  un `category_menu`: **Juegos** (juegos en sí, `GAMES_*`), **Plataformas y
+  tiendas** (launchers/tiendas multi-juego como Steam/Heroic/Lutris, `STORES_*`)
+  y **Herramientas y rendimiento** (Proton/Wine/GameMode/MangoHud…, `GTOOLS_*`).
+  Los launchers de un solo juego (p. ej. Minecraft vía Prism Launcher) van en
+  **Juegos**, no en tiendas. Una cuarta entrada ejecuta `install_hytale`.
+
+### `install_hytale`
+- **Firma:** `install_hytale`
+- **Qué hace:** instalador de caso especial para el launcher de Hytale en Linux,
+  que es un paquete Flatpak descargado (de hytale.com), no un paquete de
+  repo/AUR. Asegura que `flatpak` esté instalado, localiza
+  `hytale-launcher*.flatpak` en la carpeta de Descargas (`xdg-user-dir DOWNLOAD`,
+  con respaldos; si no, ofrece abrir hytale.com y pide la ruta), y lo instala con
+  `flatpak --user install`.
+
 ### `apps_section`
 - **Firma:** `apps_section`
 - **Qué hace:** el menú de nivel superior «Instalar aplicaciones»: las ocho
